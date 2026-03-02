@@ -1,12 +1,53 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="p-4 p-md-5 mb-4 bg-light rounded-3 border">
-  <h1 class="display-6">Institute Placement Portal</h1>
-  <p class="lead mb-4">Role-based placement management for Admin, Company and Student with SQLite-backed records.</p>
-  <div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-primary" href="{{ url_for('login') }}">Login</a>
-    <a class="btn btn-success" href="{{ url_for('register_student') }}">Student Register</a>
-    <a class="btn btn-info" href="{{ url_for('register_company') }}">Company Register</a>
+<section class="hero-section p-4 p-md-5 mb-4 rounded-4 border">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-8">
+      <span class="badge text-bg-primary mb-2">Campus Recruitment Platform</span>
+      <h1 class="display-6 fw-bold mb-3">Institute Placement Portal</h1>
+      <p class="lead mb-3">A single platform where institutes, students, and recruiters collaborate for smoother campus placements.</p>
+      <p class="text-muted mb-4">Inspired by modern hiring portals like Naukri, Indeed and Glassdoor, this application helps manage the full lifecycle: company approvals, drive publishing, applications, shortlisting, and final outcomes.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary px-4" href="{{ url_for('login') }}">Login</a>
+        <a class="btn btn-success px-4" href="{{ url_for('register_student') }}">Student Register</a>
+        <a class="btn btn-info px-4" href="{{ url_for('register_company') }}">Company Register</a>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="feature-card p-3 mb-2">
+        <h6 class="mb-1">For Admin</h6>
+        <small>Approve companies & drives, monitor all placement activities.</small>
+      </div>
+      <div class="feature-card p-3 mb-2">
+        <h6 class="mb-1">For Companies</h6>
+        <small>Create drives, review applicants, shortlist & close hiring.</small>
+      </div>
+      <div class="feature-card p-3">
+        <h6 class="mb-1">For Students</h6>
+        <small>Discover drives, apply once, and track statuses in one place.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm"><div class="card-body">
+      <h5>Company Verification</h5>
+      <p class="mb-0 text-muted">Admin approves only valid organizations before they can post recruitment drives.</p>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm"><div class="card-body">
+      <h5>Drive Management</h5>
+      <p class="mb-0 text-muted">Create, approve, complete and archive placement drives with clear visibility.</p>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm"><div class="card-body">
+      <h5>Application Tracking</h5>
+      <p class="mb-0 text-muted">Students and companies both see real-time application status and history.</p>
+    </div></div>
   </div>
 </div>
 {% endblock %}

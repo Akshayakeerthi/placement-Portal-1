@@ -297,6 +297,7 @@ def admin_dashboard():
         """
         SELECT d.id, d.drive_name, d.job_title, d.status, d.application_deadline, c.company_name
         FROM drives d JOIN company_profiles c ON c.user_id=d.company_id
+        WHERE d.status IN ('pending', 'approved')
         ORDER BY d.created_at DESC
         """
     ).fetchall()
