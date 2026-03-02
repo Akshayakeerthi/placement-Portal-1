@@ -9,7 +9,7 @@ bp = Blueprint("student", __name__, url_prefix="/api/student")
 
 @bp.post("/profile")
 @role_required("STUDENT")
-def upsert_profile():
+def save_profile():
     user = get_current_user()
     try:
         profile = StudentService.upsert_profile(user.id, request.get_json() or {})
@@ -17,28 +17,28 @@ def upsert_profile():
             {
                 "id": profile.id,
                 "branch": profile.branch,
-                "cgpa": profile.cgpa,
                 "graduation_year": profile.graduation_year,
+                "cgpa": profile.cgpa,
                 "resume_path": profile.resume_path,
             }
         )
-    except (ValidationError, KeyError) as exc:
+    except (KeyError, ValidationError) as exc:
         return jsonify({"error": str(exc)}), 400
 
 
 @bp.get("/drives")
 @role_required("STUDENT")
-def eligible_drives():
+def drives():
     user = get_current_user()
-    return jsonify(StudentService.get_eligible_drives(user.id))
+    return jsonify(StudentService.approved_eligible_drives(user.id))
 
 
 @bp.post("/drives/<int:drive_id>/apply")
 @role_required("STUDENT")
-def apply(drive_id):
+def apply(drive_id: int):
     user = get_current_user()
     try:
-        app = StudentService.apply_to_drive(user.id, drive_id)
+        app = StudentService.apply(user.id, drive_id)
         return jsonify({"id": app.id, "status": app.status}), 201
     except ValidationError as exc:
         return jsonify({"error": str(exc)}), 400
@@ -46,9 +46,9 @@ def apply(drive_id):
 
 @bp.get("/applications")
 @role_required("STUDENT")
-def history():
+def applications():
     user = get_current_user()
-    return jsonify(StudentService.application_history(user.id))
+    return jsonify(StudentService.history(user.id))
 
 
 @bp.post("/applications/export")

@@ -14,46 +14,46 @@ def dashboard():
 
 @bp.patch("/companies/<int:company_id>/approval")
 @role_required("ADMIN")
-def approve_company(company_id):
+def company_approval(company_id: int):
     payload = request.get_json() or {}
-    profile = AdminService.set_company_approval(company_id, bool(payload.get("approved", False)))
-    return jsonify({"company_id": profile.id, "approved": profile.approved})
+    company = AdminService.set_company_status(company_id, bool(payload.get("approved", False)))
+    return jsonify({"company_id": company.id, "approved": company.approved})
 
 
 @bp.patch("/drives/<int:drive_id>/approval")
 @role_required("ADMIN")
-def approve_drive(drive_id):
+def drive_approval(drive_id: int):
     payload = request.get_json() or {}
-    drive = AdminService.set_drive_approval(drive_id, bool(payload.get("approved", False)))
+    drive = AdminService.set_drive_status(drive_id, bool(payload.get("approved", False)))
     return jsonify({"drive_id": drive.id, "approved": drive.approved})
+
+
+@bp.patch("/users/<int:user_id>/blacklist")
+@role_required("ADMIN")
+def blacklist(user_id: int):
+    payload = request.get_json() or {}
+    try:
+        user = AdminService.blacklist_user(user_id, bool(payload.get("is_blacklisted", True)))
+        return jsonify({"user_id": user.id, "is_blacklisted": user.is_blacklisted})
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
 
 
 @bp.get("/students")
 @role_required("ADMIN")
-def search_students():
+def students():
     q = request.args.get("q", "")
     return jsonify(AdminService.search_students(q))
 
 
 @bp.get("/companies")
 @role_required("ADMIN")
-def search_companies():
+def companies():
     q = request.args.get("q", "")
     return jsonify(AdminService.search_companies(q))
-
-
-@bp.patch("/users/<int:user_id>/blacklist")
-@role_required("ADMIN")
-def blacklist_user(user_id):
-    payload = request.get_json() or {}
-    try:
-        user = AdminService.blacklist_user(user_id, bool(payload.get("is_blacklisted", True)))
-        return jsonify({"id": user.id, "is_blacklisted": user.is_blacklisted})
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
 
 
 @bp.get("/reports")
 @role_required("ADMIN")
 def reports():
-    return jsonify(AdminService.reports_summary())
+    return jsonify(AdminService.reports())

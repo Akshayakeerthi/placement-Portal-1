@@ -8,15 +8,17 @@ from redis import Redis
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
-celery_app = Celery(__name__)
+celery_app = Celery("placement_portal")
 redis_client: Redis | None = None
 
 
 def init_extensions(app):
     global redis_client
+
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+
     redis_client = Redis.from_url(app.config["REDIS_URL"], decode_responses=True)
 
     celery_app.conf.update(
@@ -29,9 +31,9 @@ def init_extensions(app):
         enable_utc=True,
     )
 
-    class ContextTask(celery_app.Task):
+    class FlaskContextTask(celery_app.Task):
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return self.run(*args, **kwargs)
 
-    celery_app.Task = ContextTask
+    celery_app.Task = FlaskContextTask

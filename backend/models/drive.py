@@ -22,5 +22,5 @@ class PlacementDrive(TimestampMixin, db.Model):
     applications = db.relationship("Application", back_populates="drive", cascade="all, delete-orphan")
 
     def close_if_expired(self):
-        if not self.closed and self.deadline < datetime.utcnow():
+        if self.deadline < datetime.utcnow() and not self.closed:
             self.closed = True

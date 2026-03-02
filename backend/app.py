@@ -10,14 +10,14 @@ from backend.routes.admin_routes import bp as admin_bp
 from backend.routes.auth_routes import bp as auth_bp
 from backend.routes.company_routes import bp as company_bp
 from backend.routes.student_routes import bp as student_bp
-from backend.tasks import jobs  # noqa: F401
+from backend.tasks import jobs as _jobs  # noqa: F401
 
 
 def create_app():
     app = Flask(
         __name__,
-        template_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend")),
-        static_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend")),
+        template_folder=os.path.join(os.path.dirname(__file__), "..", "frontend"),
+        static_folder=os.path.join(os.path.dirname(__file__), "..", "frontend"),
         static_url_path="/frontend",
     )
     app.config.from_object(Config)
@@ -43,19 +43,19 @@ def create_app():
         return jsonify({"status": "ok"})
 
     @app.cli.command("init-db")
-    def init_db_command():
+    def init_db():
         db.create_all()
         admin = User.query.filter_by(role=UserRole.ADMIN).first()
-        if not admin:
+        if admin is None:
             admin = User(
                 name=app.config["ADMIN_NAME"],
-                email=app.config["ADMIN_EMAIL"],
+                email=app.config["ADMIN_EMAIL"].lower(),
                 role=UserRole.ADMIN,
             )
             admin.set_password(app.config["ADMIN_PASSWORD"])
             db.session.add(admin)
             db.session.commit()
-            print("Admin user created")
+            print("Admin created")
         else:
             print("Admin already exists")
 
