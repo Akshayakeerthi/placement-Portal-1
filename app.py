@@ -182,6 +182,12 @@ def logout():
 @app.route("/register/student", methods=["GET", "POST"])
 def register_student():
     if request.method == "POST":
+        password = request.form["password"]
+        confirm_password = request.form.get("confirm_password", "")
+        if password != confirm_password:
+            flash("Password and confirm password must match.", "danger")
+            return redirect(url_for("register_student"))
+
         db = get_db()
         try:
             cur = db.execute(
@@ -189,7 +195,7 @@ def register_student():
                 (
                     "student",
                     request.form["username"].strip().lower(),
-                    generate_password_hash(request.form["password"]),
+                    generate_password_hash(password),
                     1,
                     now_iso(),
                 ),
@@ -221,6 +227,12 @@ def register_student():
 @app.route("/register/company", methods=["GET", "POST"])
 def register_company():
     if request.method == "POST":
+        password = request.form["password"]
+        confirm_password = request.form.get("confirm_password", "")
+        if password != confirm_password:
+            flash("Password and confirm password must match.", "danger")
+            return redirect(url_for("register_company"))
+
         db = get_db()
         try:
             cur = db.execute(
@@ -228,7 +240,7 @@ def register_company():
                 (
                     "company",
                     request.form["username"].strip().lower(),
-                    generate_password_hash(request.form["password"]),
+                    generate_password_hash(password),
                     0,
                     now_iso(),
                 ),
