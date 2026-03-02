@@ -35,3 +35,6 @@ python app.py
 
 ## Database
 Database is created **programmatically** in `init_db()` (`app.py`) using SQLite (`placement_portal.db`).
+
+## Troubleshooting
+If you upgraded from an older version and see an error like `no such column: d.drive_name`, just restart the app once with the latest code. The app now auto-migrates the `drives` table and adds missing columns programmatically.

@@ -102,6 +102,11 @@ def init_db() -> None:
         """
     )
 
+    # Lightweight migrations for older DB files created before new columns existed.
+    drive_columns = {row[1] for row in db.execute("PRAGMA table_info(drives)").fetchall()}
+    if "drive_name" not in drive_columns:
+        db.execute("ALTER TABLE drives ADD COLUMN drive_name TEXT")
+
     admin = db.execute("SELECT id FROM users WHERE role='admin' LIMIT 1").fetchone()
     if not admin:
         db.execute(
