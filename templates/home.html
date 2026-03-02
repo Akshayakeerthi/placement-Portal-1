@@ -1,18 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="p-5 mb-4 bg-light rounded-3">
-  <div class="container-fluid py-4">
-    <h1 class="display-6 fw-bold">Institute Placement Portal</h1>
-    <p class="col-md-9 fs-5">Manage campus recruitment with Admin, Company, and Student workflows using Flask + SQLite.</p>
-    <a class="btn btn-primary me-2" href="{{ url_for('login') }}">Login</a>
-    <a class="btn btn-outline-success me-2" href="{{ url_for('register_student') }}">Student Register</a>
-    <a class="btn btn-outline-info" href="{{ url_for('register_company') }}">Company Register</a>
+<div class="p-4 p-md-5 mb-4 bg-light rounded-3 border">
+  <h1 class="display-6">Institute Placement Portal</h1>
+  <p class="lead mb-4">Role-based placement management for Admin, Company and Student with SQLite-backed records.</p>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-primary" href="{{ url_for('login') }}">Login</a>
+    <a class="btn btn-success" href="{{ url_for('register_student') }}">Student Register</a>
+    <a class="btn btn-info" href="{{ url_for('register_company') }}">Company Register</a>
   </div>
-</div>
-
-<div class="row g-3">
-  <div class="col-md-4"><div class="card card-body h-100"><h5>Admin</h5><p>Approves companies and drives, manages users, and blacklists entities.</p></div></div>
-  <div class="col-md-4"><div class="card card-body h-100"><h5>Company</h5><p>Creates profiles and recruitment drives, then updates application outcomes.</p></div></div>
-  <div class="col-md-4"><div class="card card-body h-100"><h5>Student</h5><p>Applies to approved drives, tracks status, and maintains profile/history.</p></div></div>
 </div>
 {% endblock %}

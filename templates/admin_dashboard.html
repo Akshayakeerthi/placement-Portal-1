@@ -1,40 +1,37 @@
 {% extends 'base.html' %}
 {% block content %}
 <h3 class="mb-3">Admin Dashboard</h3>
-<form method="get" class="row g-2 mb-4">
-  <div class="col-md-5"><input name="search" value="{{ search }}" class="form-control" placeholder="Search by name / username / id"></div>
-  <div class="col-md-2"><button class="btn btn-outline-primary w-100">Search</button></div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4"><input name="search" value="{{ search }}" class="form-control" placeholder="student, organizations"></div>
+  <div class="col-md-2"><button class="btn btn-outline-primary w-100">search</button></div>
 </form>
 
-<div class="row g-4">
+<div class="row g-3">
   <div class="col-lg-6">
-    <div class="card"><div class="card-header">Companies</div><div class="card-body table-responsive">
-      <table class="table table-sm align-middle">
-        <tr><th>ID</th><th>Name</th><th>Approval</th><th>Action</th></tr>
+    <div class="card"><div class="card-header">Registered Companies</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
         {% for c in companies %}
         <tr>
-          <td>{{ c.id }}</td><td>{{ c.company_name }}<br><small>{{ c.username }}</small></td>
-          <td>{{ 'Approved' if c.is_approved else 'Pending' }}</td>
+          <td>{{ c.company_name }}</td>
           <td>
             {% if not c.is_approved %}
-            <form method="post" action="{{ url_for('admin_approve_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-success btn-sm">Approve</button></form>
+            <form method="post" action="{{ url_for('admin_approve_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-sm btn-success">Approve</button></form>
             {% endif %}
-            <form method="post" action="{{ url_for('admin_blacklist_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-danger btn-sm">Blacklist</button></form>
+            <form method="post" action="{{ url_for('admin_blacklist_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-sm btn-danger">blacklist</button></form>
           </td>
         </tr>
         {% endfor %}
       </table>
     </div></div>
   </div>
-
   <div class="col-lg-6">
-    <div class="card"><div class="card-header">Students</div><div class="card-body table-responsive">
-      <table class="table table-sm align-middle">
-        <tr><th>ID</th><th>Name</th><th>Dept</th><th>Action</th></tr>
+    <div class="card"><div class="card-header">Registered Students</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
         {% for s in students %}
         <tr>
-          <td>{{ s.id }}</td><td>{{ s.full_name }}<br><small>{{ s.username }}</small></td><td>{{ s.department }}</td>
-          <td><form method="post" action="{{ url_for('admin_blacklist_student', user_id=s.id) }}"><button class="btn btn-danger btn-sm">Blacklist</button></form></td>
+          <td>{{ s.full_name }}</td>
+          <td>{{ s.department }}</td>
+          <td><form method="post" action="{{ url_for('admin_blacklist_student', user_id=s.id) }}"><button class="btn btn-sm btn-danger">blacklist</button></form></td>
         </tr>
         {% endfor %}
       </table>
@@ -42,24 +39,52 @@
   </div>
 </div>
 
-<div class="card mt-4"><div class="card-header">Pending Placement Drives</div><div class="card-body table-responsive">
-<table class="table table-bordered table-sm align-middle">
-  <tr><th>ID</th><th>Company</th><th>Job Title</th><th>Deadline</th><th>Actions</th></tr>
-  {% for d in pending_drives %}
-  <tr>
-    <td>{{ d.id }}</td><td>{{ d.company_name }}</td><td>{{ d.job_title }}</td><td>{{ d.application_deadline }}</td>
-    <td>
-      <form method="post" action="{{ url_for('admin_update_drive_status', drive_id=d.id) }}" class="d-inline">
-        <input type="hidden" name="status" value="approved"><button class="btn btn-success btn-sm">Approve</button>
-      </form>
-      <form method="post" action="{{ url_for('admin_update_drive_status', drive_id=d.id) }}" class="d-inline">
-        <input type="hidden" name="status" value="rejected"><button class="btn btn-danger btn-sm">Reject</button>
-      </form>
-    </td>
-  </tr>
-  {% else %}
-  <tr><td colspan="5" class="text-center">No pending drives</td></tr>
-  {% endfor %}
-</table>
+<div class="card mt-3"><div class="card-header">Company Applications</div><div class="card-body p-0">
+  <table class="table table-sm mb-0">
+    {% for c in pending_companies %}
+    <tr>
+      <td>{{ c.company_name }}</td>
+      <td><form method="post" action="{{ url_for('admin_approve_company', user_id=c.id) }}"><button class="btn btn-sm btn-success">Approve</button></form></td>
+    </tr>
+    {% else %}
+    <tr><td class="text-center p-3">No pending company applications.</td></tr>
+    {% endfor %}
+  </table>
+</div></div>
+
+<div class="card mt-3"><div class="card-header">Ongoing Drives</div><div class="card-body p-0">
+  <table class="table table-sm mb-0">
+    <tr><th>Sr No.</th><th>Drive Name</th><th>Actions</th></tr>
+    {% for d in drives %}
+    <tr>
+      <td>{{ d.id }}</td>
+      <td>{{ d.drive_name or d.job_title }}</td>
+      <td>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin_drive_details', drive_id=d.id) }}">view details</a>
+        {% if d.status == 'pending' %}
+        <form method="post" action="{{ url_for('admin_update_drive_status', drive_id=d.id) }}" class="d-inline"><input type="hidden" name="status" value="approved"><button class="btn btn-sm btn-success">approve</button></form>
+        {% elif d.status == 'approved' %}
+        <form method="post" action="{{ url_for('admin_update_drive_status', drive_id=d.id) }}" class="d-inline"><input type="hidden" name="status" value="closed"><button class="btn btn-sm btn-warning">mark as complete</button></form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div></div>
+
+<div class="card mt-3"><div class="card-header">Student Applications</div><div class="card-body p-0">
+  <table class="table table-sm mb-0">
+    <tr><th>Sr No.</th><th>Name</th><th>Drive</th><th>Company</th><th>Date</th><th>Action</th></tr>
+    {% for a in student_applications %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ a.full_name }}</td>
+      <td>{{ a.job_title }}</td>
+      <td>{{ a.company_name }}</td>
+      <td>{{ a.application_date[:10] }}</td>
+      <td><span class="badge text-bg-secondary">{{ a.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </table>
 </div></div>
 {% endblock %}

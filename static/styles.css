@@ -1,3 +1,4 @@
-body { background-color: #f5f7fb; }
-.card { border-radius: 0.8rem; }
+body { background: #f3f4f6; }
+.card { border-radius: 0.75rem; border: 1px solid #d7dce3; }
 .table td, .table th { vertical-align: middle; }
+.card-header { font-weight: 600; background: #f8fafc; }

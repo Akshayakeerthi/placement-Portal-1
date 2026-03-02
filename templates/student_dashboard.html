@@ -1,35 +1,51 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h3>Student Dashboard - {{ profile.full_name }}</h3>
-  <a class="btn btn-outline-primary" href="{{ url_for('student_profile') }}">Edit Profile</a>
+  <h3>Students' Dashboard</h3>
+  <div>
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('student_profile') }}">edit profile</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('student_history') }}">History</a>
+  </div>
 </div>
+<p>Welcome <strong>{{ profile.full_name }}</strong></p>
 
-<div class="row g-4">
-  <div class="col-lg-7">
-    <div class="card"><div class="card-header">Approved Placement Drives</div><div class="card-body table-responsive">
-      <table class="table table-sm align-middle">
-        <tr><th>Job</th><th>Company</th><th>Deadline</th><th>Action</th></tr>
-        {% for d in approved_drives %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card"><div class="card-header">Organizations</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        {% for o in organizations %}
+        <tr><td>{{ o.company_name }}</td><td><a class="btn btn-sm btn-outline-primary" href="{{ o.website or '#' }}" target="_blank">view details</a></td></tr>
+        {% else %}
+        <tr><td class="p-3">No approved organizations.</td></tr>
+        {% endfor %}
+      </table>
+    </div></div>
+
+    <div class="card mt-3"><div class="card-header">Applied Drives</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        <tr><th>Sr No.</th><th>Drive Name</th><th>Company</th><th>Date</th><th></th></tr>
+        {% for a in applied_drives %}
         <tr>
-          <td>{{ d.job_title }}<br><small>{{ d.location }}</small></td><td>{{ d.company_name }}</td><td>{{ d.application_deadline }}</td>
-          <td><form method="post" action="{{ url_for('apply_drive', drive_id=d.id) }}"><button class="btn btn-sm btn-success">Apply</button></form></td>
+          <td>{{ loop.index }}</td><td>{{ a.job_title }}</td><td>{{ a.company_name }}</td><td>{{ a.application_date[:10] }}</td>
+          <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('student_drive_details', drive_id=a.drive_id) }}">view details</a></td>
         </tr>
         {% else %}
-        <tr><td colspan="4" class="text-center">No approved drives yet.</td></tr>
+        <tr><td colspan="5" class="text-center p-3">No applied drives yet.</td></tr>
         {% endfor %}
       </table>
     </div></div>
   </div>
 
-  <div class="col-lg-5">
-    <div class="card"><div class="card-header">My Applications</div><div class="card-body table-responsive">
-      <table class="table table-sm align-middle">
-        <tr><th>Drive</th><th>Status</th><th>Remark</th></tr>
-        {% for a in applications %}
-        <tr><td>{{ a.job_title }}<br><small>{{ a.company_name }}</small></td><td>{{ a.status }}</td><td>{{ a.remarks or '-' }}</td></tr>
+  <div class="col-lg-7">
+    <div class="card"><div class="card-header">Current Drives</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        {% for d in current_drives %}
+        <tr>
+          <td>{{ d.drive_name or d.job_title }}</td>
+          <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('student_drive_details', drive_id=d.id) }}">view details</a></td>
+        </tr>
         {% else %}
-        <tr><td colspan="3" class="text-center">No applications yet.</td></tr>
+        <tr><td class="p-3">No current drives.</td></tr>
         {% endfor %}
       </table>
     </div></div>

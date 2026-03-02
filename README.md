@@ -1,5 +1,7 @@
 # Placement Portal Application (Flask + SQLite)
 
+A wireframe-aligned campus placement portal with role-specific dashboards.
+
 ## Setup
 ```bash
 python3 -m venv .venv
@@ -9,15 +11,27 @@ python app.py
 ```
 
 - URL: `http://127.0.0.1:5000`
-- Default admin login:
+- Admin login:
   - Username: `admin`
   - Password: `admin123`
 
-## Features
-- **Admin**: approve/reject companies and drives, search users, blacklist student/company.
-- **Company**: register (approval required), create drives, review applications, update status.
-- **Student**: register, edit profile, apply to approved drives, track application history.
+## Role Workflows
+- **Admin**
+  - Search students/organizations
+  - Approve company registrations
+  - Approve/reject/close drives
+  - Blacklist company/student
+  - Review recent student applications
+- **Company**
+  - Register (admin approval required)
+  - Create drives
+  - View drive details
+  - Review each application and update status/remarks
+- **Student**
+  - Register and edit profile
+  - View organizations and current approved drives
+  - Open drive details and apply
+  - View application history
 
 ## Database
-SQLite database file (`placement_portal.db`) is created automatically via `init_db()` in `app.py`.
-No manual DB creation is required.
+Database is created **programmatically** in `init_db()` (`app.py`) using SQLite (`placement_portal.db`).

@@ -1,27 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
-<h3 class="mb-3">Applications - {{ drive.job_title }}</h3>
-<div class="card"><div class="card-body table-responsive">
-<table class="table table-bordered align-middle">
-  <tr><th>Student</th><th>Department</th><th>Date</th><th>Status</th><th>Update</th></tr>
-  {% for a in applications %}
-  <tr>
-    <td>{{ a.full_name }}</td><td>{{ a.department }}</td><td>{{ a.application_date[:10] }}</td><td>{{ a.status }}</td>
-    <td>
-      <form method="post" action="{{ url_for('company_update_application', application_id=a.id) }}" class="d-flex gap-2">
-        <select class="form-select form-select-sm" name="status">
-          {% for st in ['applied','shortlisted','selected','rejected'] %}
-          <option value="{{ st }}" {% if st==a.status %}selected{% endif %}>{{ st }}</option>
-          {% endfor %}
-        </select>
-        <input class="form-control form-control-sm" name="remarks" placeholder="remarks" value="{{ a.remarks or '' }}">
-        <button class="btn btn-sm btn-primary">Save</button>
-      </form>
-    </td>
-  </tr>
-  {% else %}
-  <tr><td colspan="5" class="text-center">No applications yet.</td></tr>
-  {% endfor %}
-</table>
+<div class="d-flex justify-content-between mb-3">
+  <h4>Update Applications for the Drive</h4>
+  <a class="btn btn-outline-secondary" href="{{ url_for('company_dashboard') }}">back</a>
+</div>
+<p><strong>Drive:</strong> {{ drive.drive_name or drive.job_title }} | <strong>Job Title:</strong> {{ drive.job_title }}</p>
+<div class="card"><div class="card-body p-0">
+  <table class="table table-sm mb-0">
+    <tr><th>Received Applications</th><th>Department</th><th>Status</th><th>Action</th></tr>
+    {% for a in applications %}
+    <tr>
+      <td>{{ a.full_name }}</td>
+      <td>{{ a.department }}</td>
+      <td>{{ a.status }}</td>
+      <td><a class="btn btn-sm btn-primary" href="{{ url_for('company_application_detail', application_id=a.id) }}">review application</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-center p-3">No applications yet.</td></tr>
+    {% endfor %}
+  </table>
 </div></div>
 {% endblock %}
