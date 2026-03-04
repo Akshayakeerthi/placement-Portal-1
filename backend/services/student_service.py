@@ -27,6 +27,13 @@ class StudentService:
         return profile
 
     @staticmethod
+    def set_resume(user_id: int, resume_path: str):
+        profile = StudentProfile.query.filter_by(user_id=user_id).first_or_404()
+        profile.resume_path = resume_path
+        db.session.commit()
+        return profile
+
+    @staticmethod
     def approved_eligible_drives(user_id: int):
         profile = StudentProfile.query.filter_by(user_id=user_id).first_or_404()
         key = f"drives:approved:{profile.branch}:{profile.graduation_year}:{profile.cgpa}"

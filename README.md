@@ -61,7 +61,7 @@ requirements.txt
 - `/api/auth/*` - login/register
 - `/api/admin/*` - dashboard, approvals, search, blacklist, reports
 - `/api/company/*` - profile, drives, applicants, application updates
-- `/api/student/*` - profile, eligible drives, apply, history, csv export
+- `/api/student/*` - profile, resume upload, eligible drives, apply, history, csv export
 
 ## Local setup
 
@@ -108,3 +108,11 @@ celery -A backend.celery_worker.celery_app worker -B --loglevel=info
 
 - SQLite is generated via SQLAlchemy programmatically.
 - No frameworks beyond Flask, SQLite, Redis, Celery, Vue, Bootstrap are used.
+
+
+## Basic automated tests
+
+```bash
+. .venv/bin/activate
+python -m unittest tests/test_api_smoke.py -v
+```

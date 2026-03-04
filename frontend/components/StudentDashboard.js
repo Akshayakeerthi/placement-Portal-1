@@ -4,6 +4,7 @@ export default {
   data() {
     return {
       profile: { branch: '', graduation_year: 2025, cgpa: 7.0, resume_path: '' },
+      resumeFile: null,
       drives: [],
       history: [],
       message: '',
@@ -26,11 +27,33 @@ export default {
     async saveProfile() {
       this.error = '';
       try {
-        await api.post('/student/profile', this.profile);
+        const saved = await api.post('/student/profile', this.profile);
+        this.profile.resume_path = saved.data.resume_path || this.profile.resume_path;
         this.message = 'Profile updated';
         await this.refresh();
       } catch (e) {
         this.error = e.response?.data?.error || 'Profile update failed';
+      }
+    },
+    onResumeChange(event) {
+      this.resumeFile = event.target.files?.[0] || null;
+    },
+    async uploadResume() {
+      if (!this.resumeFile) {
+        this.error = 'Choose a file first';
+        return;
+      }
+      this.error = '';
+      const formData = new FormData();
+      formData.append('resume', this.resumeFile);
+      try {
+        const res = await api.post('/student/resume', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        this.profile.resume_path = res.data.resume_path;
+        this.message = 'Resume uploaded successfully';
+      } catch (e) {
+        this.error = e.response?.data?.error || 'Resume upload failed';
       }
     },
     async apply(driveId) {
@@ -55,7 +78,11 @@ export default {
         <input class="form-control mb-2" v-model="profile.branch" placeholder="Branch" />
         <input class="form-control mb-2" type="number" v-model="profile.graduation_year" placeholder="Graduation Year" />
         <input class="form-control mb-2" type="number" step="0.1" v-model="profile.cgpa" placeholder="CGPA" />
-        <input class="form-control mb-2" v-model="profile.resume_path" placeholder="Resume file path" />
+        <input class="form-control mb-2" v-model="profile.resume_path" placeholder="Resume file path" readonly />
+        <div class="d-flex gap-2 mb-2">
+          <input class="form-control" type="file" @change="onResumeChange" />
+          <button class="btn btn-outline-primary" @click="uploadResume">Upload Resume</button>
+        </div>
         <button class="btn btn-primary" @click="saveProfile">Save Profile</button>
         <button class="btn btn-outline-secondary ms-2" @click="exportCsv">Export CSV</button>
       </div>
