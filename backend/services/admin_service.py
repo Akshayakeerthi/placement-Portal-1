@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import func, or_
 
 from backend.extensions import db
@@ -37,6 +39,15 @@ class AdminService:
     def set_drive_status(drive_id: int, approved: bool):
         drive = PlacementDrive.query.get_or_404(drive_id)
         drive.approved = approved
+        db.session.commit()
+        cache_delete_pattern("admin:*")
+        cache_delete_pattern("drives:approved:*")
+        return drive
+
+    @staticmethod
+    def close_drive(drive_id: int):
+        drive = PlacementDrive.query.get_or_404(drive_id)
+        drive.closed = True
         db.session.commit()
         cache_delete_pattern("admin:*")
         cache_delete_pattern("drives:approved:*")
@@ -107,6 +118,33 @@ class AdminService:
         ]
         cache_set(key, result)
         return result
+
+    @staticmethod
+    def list_drives(query: str = ""):
+        rows = (
+            db.session.query(PlacementDrive, CompanyProfile)
+            .join(CompanyProfile, PlacementDrive.company_id == CompanyProfile.id)
+            .filter(
+                or_(
+                    PlacementDrive.title.ilike(f"%{query}%"),
+                    CompanyProfile.company_name.ilike(f"%{query}%"),
+                )
+            )
+            .order_by(PlacementDrive.created_at.desc())
+            .all()
+        )
+        now = datetime.utcnow()
+        return [
+            {
+                "drive_id": d.id,
+                "title": d.title,
+                "company_name": c.company_name,
+                "approved": d.approved,
+                "closed": d.closed or d.deadline < now,
+                "deadline": d.deadline.isoformat(),
+            }
+            for d, c in rows
+        ]
 
     @staticmethod
     def reports():

@@ -7,6 +7,7 @@ export default {
       q: '',
       students: [],
       companies: [],
+      drives: [],
       message: '',
       error: '',
       loading: false,
@@ -20,7 +21,12 @@ export default {
       this.loading = true;
       this.error = '';
       try {
-        await Promise.all([this.loadDashboard(), this.searchStudents(), this.searchCompanies()]);
+        await Promise.all([
+          this.loadDashboard(),
+          this.searchStudents(),
+          this.searchCompanies(),
+          this.loadDrives(),
+        ]);
       } catch (e) {
         this.error = e.response?.data?.error || 'Could not refresh admin dashboard';
       } finally {
@@ -36,8 +42,11 @@ export default {
     async searchCompanies() {
       this.companies = (await api.get('/admin/companies', { params: { q: this.q } })).data;
     },
+    async loadDrives() {
+      this.drives = (await api.get('/admin/drives', { params: { q: this.q } })).data;
+    },
     async onSearchInput() {
-      await Promise.all([this.searchStudents(), this.searchCompanies()]);
+      await Promise.all([this.searchStudents(), this.searchCompanies(), this.loadDrives()]);
     },
     async toggleBlacklist(userId, val) {
       await api.patch(`/admin/users/${userId}/blacklist`, { is_blacklisted: val });
@@ -47,6 +56,16 @@ export default {
     async setCompanyApproval(companyId, approved) {
       await api.patch(`/admin/companies/${companyId}/approval`, { approved });
       this.message = approved ? 'Company approved' : 'Company rejected';
+      await this.refreshAll();
+    },
+    async setDriveApproval(driveId, approved) {
+      await api.patch(`/admin/drives/${driveId}/approval`, { approved });
+      this.message = approved ? 'Drive approved' : 'Drive rejected';
+      await this.refreshAll();
+    },
+    async closeDrive(driveId) {
+      await api.patch(`/admin/drives/${driveId}/close`);
+      this.message = 'Drive closed';
       await this.refreshAll();
     },
   },
@@ -67,9 +86,10 @@ export default {
       </div>
 
       <div class="input-group mb-3">
-        <input class="form-control" v-model="q" @input="onSearchInput" placeholder="Search students or companies"/>
+        <input class="form-control" v-model="q" @input="onSearchInput" placeholder="Search students, companies, or drives"/>
         <button class="btn btn-outline-primary" @click="searchStudents">Students</button>
         <button class="btn btn-outline-secondary" @click="searchCompanies">Companies</button>
+        <button class="btn btn-outline-dark" @click="loadDrives">Drives</button>
       </div>
 
       <div v-if="loading" class="alert alert-info py-2">Refreshing data...</div>
@@ -79,11 +99,11 @@ export default {
         <div class="card-header">Registered Students</div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered mb-0">
-            <thead><tr><th>Name</th><th>Email</th><th>Branch</th><th>Action</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Branch</th><th>CGPA</th><th>Year</th><th>Action</th></tr></thead>
             <tbody>
-              <tr v-if="!students.length"><td colspan="4" class="text-center text-muted">No students found</td></tr>
+              <tr v-if="!students.length"><td colspan="6" class="text-center text-muted">No students found</td></tr>
               <tr v-for="s in students" :key="s.user_id">
-                <td>{{s.name}}</td><td>{{s.email}}</td><td>{{s.branch}}</td>
+                <td>{{s.name}}</td><td>{{s.email}}</td><td>{{s.branch}}</td><td>{{s.cgpa}}</td><td>{{s.graduation_year}}</td>
                 <td>
                   <button class="btn btn-sm btn-warning" @click="toggleBlacklist(s.user_id, !s.blacklisted)">
                     {{s.blacklisted?'Unblacklist':'Blacklist'}}
@@ -95,7 +115,7 @@ export default {
         </div>
       </div>
 
-      <div class="card">
+      <div class="card mb-3">
         <div class="card-header">Registered Companies</div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered mb-0">
@@ -111,11 +131,42 @@ export default {
                   </span>
                 </td>
                 <td class="d-flex gap-1">
-                  <button class="btn btn-sm btn-success" @click="setCompanyApproval(c.company_id, true)">Approve</button>
-                  <button class="btn btn-sm btn-outline-danger" @click="setCompanyApproval(c.company_id, false)">Reject</button>
+                  <template v-if="!c.approved">
+                    <button class="btn btn-sm btn-success" @click="setCompanyApproval(c.company_id, true)">Approve</button>
+                    <button class="btn btn-sm btn-outline-danger" @click="setCompanyApproval(c.company_id, false)">Reject</button>
+                  </template>
                   <button class="btn btn-sm btn-warning" @click="toggleBlacklist(c.user_id, !c.blacklisted)">
                     {{c.blacklisted?'Unblacklist':'Blacklist'}}
                   </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Placement Drives</div>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered mb-0">
+            <thead><tr><th>Drive</th><th>Company</th><th>Deadline</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr v-if="!drives.length"><td colspan="5" class="text-center text-muted">No drives found</td></tr>
+              <tr v-for="d in drives" :key="d.drive_id">
+                <td>{{d.title}}</td>
+                <td>{{d.company_name}}</td>
+                <td>{{d.deadline}}</td>
+                <td>
+                  <span class="badge" :class="d.closed ? 'text-bg-dark' : (d.approved ? 'text-bg-success' : 'text-bg-secondary')">
+                    {{ d.closed ? 'Closed' : (d.approved ? 'Approved' : 'Pending') }}
+                  </span>
+                </td>
+                <td class="d-flex gap-1">
+                  <template v-if="!d.approved && !d.closed">
+                    <button class="btn btn-sm btn-success" @click="setDriveApproval(d.drive_id, true)">Approve</button>
+                    <button class="btn btn-sm btn-outline-danger" @click="setDriveApproval(d.drive_id, false)">Reject</button>
+                  </template>
+                  <button v-if="d.approved && !d.closed" class="btn btn-sm btn-outline-dark" @click="closeDrive(d.drive_id)">Close Drive</button>
                 </td>
               </tr>
             </tbody>

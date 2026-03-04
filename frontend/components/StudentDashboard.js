@@ -100,9 +100,13 @@ export default {
 
       <div v-if="section==='edit-profile'" class="card p-3 mb-3">
         <h6>Edit Profile</h6>
-        <input class="form-control mb-2" v-model="profileDraft.branch" placeholder="Branch" />
-        <input class="form-control mb-2" type="number" v-model="profileDraft.graduation_year" placeholder="Graduation Year" />
-        <input class="form-control mb-2" type="number" step="0.1" v-model="profileDraft.cgpa" placeholder="CGPA" />
+        <label class="form-label">Branch</label>
+        <input class="form-control mb-2" v-model="profileDraft.branch" placeholder="e.g. CSE" />
+        <label class="form-label">Graduation Year</label>
+        <input class="form-control mb-2" type="number" v-model="profileDraft.graduation_year" placeholder="e.g. 2022, 2025, 2026" />
+        <label class="form-label">CGPA</label>
+        <input class="form-control mb-2" type="number" step="0.1" v-model="profileDraft.cgpa" placeholder="e.g. 8.1" />
+        <label class="form-label">Resume Path</label>
         <input class="form-control mb-2" v-model="profileDraft.resume_path" placeholder="Resume file path" readonly />
         <div class="d-flex gap-2 mb-2">
           <input class="form-control" type="file" @change="onResumeChange" />

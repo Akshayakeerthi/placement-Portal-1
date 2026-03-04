@@ -125,6 +125,16 @@ class ApiSmokeTests(unittest.TestCase):
         )
         self.assertEqual(r.status_code, 400)
 
+    def test_student_profile_allows_past_graduation_year(self):
+        token = self._register_and_login("Alumni", "alumni@test.com", "STUDENT")
+        r = self.client.post(
+            "/api/student/profile",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"branch": "ECE", "graduation_year": 2022, "cgpa": 7.4},
+        )
+        self.assertEqual(r.status_code, 200)
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -28,6 +28,13 @@ def drive_approval(drive_id: int):
     return jsonify({"drive_id": drive.id, "approved": drive.approved})
 
 
+@bp.patch("/drives/<int:drive_id>/close")
+@role_required("ADMIN")
+def close_drive(drive_id: int):
+    drive = AdminService.close_drive(drive_id)
+    return jsonify({"drive_id": drive.id, "closed": drive.closed})
+
+
 @bp.patch("/users/<int:user_id>/blacklist")
 @role_required("ADMIN")
 def blacklist(user_id: int):
@@ -51,6 +58,13 @@ def students():
 def companies():
     q = request.args.get("q", "")
     return jsonify(AdminService.search_companies(q))
+
+
+@bp.get("/drives")
+@role_required("ADMIN")
+def drives():
+    q = request.args.get("q", "")
+    return jsonify(AdminService.list_drives(q))
 
 
 @bp.get("/reports")
