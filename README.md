@@ -156,6 +156,9 @@ Build and start all services (Flask, Redis, Celery worker, Celery beat):
 docker compose up --build
 ```
 
+Yes — this is enough to start the application stack for local development.
+After containers are up, open: `http://127.0.0.1:5000`
+
 Run in background:
 
 ```bash
@@ -172,6 +175,10 @@ The Docker setup includes:
 - `Dockerfile` for the Flask/Celery runtime image
 - `docker-compose.yml` with services: `redis`, `flask`, `celery`, `celery_beat`
 - Flask service auto-runs `flask init-db` before starting the server
+
+Admin login credentials (same for Docker and non-Docker runs):
+- email: `admin@ppa.local`
+- password: `Admin@123`
 
 ### 7) (Optional) Run automated smoke tests
 
