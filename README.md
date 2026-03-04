@@ -63,9 +63,15 @@ requirements.txt
 - `/api/company/*` - profile, drives, applicants, application updates
 - `/api/student/*` - profile, resume upload, eligible drives, apply, history, csv export
 
-## Local setup
+---
 
-### 1) Install dependencies
+## Complete setup and run steps
+
+> Run all commands from project root: `placement-Portal-1/`
+
+### 1) Create and activate virtual environment
+
+#### Linux / macOS / WSL
 
 ```bash
 python -m venv .venv
@@ -73,16 +79,53 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+#### Windows Command Prompt
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
 ### 2) Start Redis
+
+Choose **one** option.
+
+#### Option A: Local Redis command (Linux/WSL)
 
 ```bash
 redis-server
 ```
 
-### 3) Initialize DB and admin
+#### Option B: Docker Redis (Windows/macOS/Linux)
+
+```bash
+docker run -d --name ppa-redis -p 6379:6379 redis:7
+```
+
+Verify Redis:
+
+```bash
+redis-cli -h 127.0.0.1 -p 6379 ping
+```
+
+Should return `PONG`.
+
+> If Redis is not on localhost, set `REDIS_URL` before running Flask/Celery.
+
+### 3) Configure Flask app and initialize DB
+
+#### Linux / macOS / WSL
 
 ```bash
 export FLASK_APP=backend.app:create_app
+flask init-db
+```
+
+#### Windows Command Prompt
+
+```bat
+set FLASK_APP=backend.app:create_app
 flask init-db
 ```
 
@@ -90,7 +133,7 @@ Default admin credentials:
 - email: `admin@ppa.local`
 - password: `Admin@123`
 
-### 4) Run Flask app
+### 4) Run Flask API + frontend entry page
 
 ```bash
 flask run
@@ -98,21 +141,32 @@ flask run
 
 Open: `http://127.0.0.1:5000`
 
-### 5) Run Celery worker + beat
+### 5) Run Celery worker + beat scheduler (new terminal)
 
 ```bash
 celery -A backend.celery_worker.celery_app worker -B --loglevel=info
 ```
 
-## Notes
+### 6) (Optional) Run automated smoke tests
 
-- SQLite is generated via SQLAlchemy programmatically.
-- No frameworks beyond Flask, SQLite, Redis, Celery, Vue, Bootstrap are used.
-
-
-## Basic automated tests
+#### Linux / macOS / WSL
 
 ```bash
 . .venv/bin/activate
 python -m unittest tests/test_api_smoke.py -v
 ```
+
+#### Windows Command Prompt
+
+```bat
+.venv\Scripts\activate
+python -m unittest tests\test_api_smoke.py -v
+```
+
+---
+
+## Notes
+
+- SQLite is generated via SQLAlchemy programmatically.
+- No frameworks beyond Flask, SQLite, Redis, Celery, Vue, Bootstrap are used.
+- Keep Redis, Flask, and Celery in the same runtime environment (all WSL or all Windows) for easiest connectivity.
