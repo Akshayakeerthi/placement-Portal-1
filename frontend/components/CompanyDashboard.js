@@ -97,17 +97,17 @@ export default {
     },
   },
   template: `
-    <div>
+    <div class="glass-card p-3 p-md-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Company Dashboard</h4>
+        <h4 class="section-title mb-0">Company Dashboard</h4>
         <div class="d-flex gap-2">
           <button v-if="section==='dashboard'" class="btn btn-outline-primary" @click="openEditProfile">Edit Profile</button>
           <button v-if="section==='dashboard'" class="btn btn-success" @click="openCreateDrive">Create Drive</button>
         </div>
       </div>
 
-      <div v-if="section==='edit-profile'" class="card p-3 mb-3">
-        <h6>Edit Company Profile</h6>
+      <div v-if="section==='edit-profile'" class="card shadow-sm border-0 p-3 mb-3">
+        <h6 class="fw-semibold">Edit Company Profile</h6>
         <label class="form-label">Company Name</label>
         <input class="form-control mb-2" v-model="profileDraft.company_name" placeholder="Enter company name" />
         <label class="form-label">Company Website</label>
@@ -120,8 +120,8 @@ export default {
         </div>
       </div>
 
-      <div v-else-if="section==='create-drive'" class="card p-3 mb-3">
-        <h6>Create New Drive</h6>
+      <div v-else-if="section==='create-drive'" class="card shadow-sm border-0 p-3 mb-3">
+        <h6 class="fw-semibold">Create New Drive</h6>
         <label class="form-label">Drive Title</label>
         <input class="form-control mb-2" v-model="drive.title" placeholder="e.g. Software Engineer" />
         <label class="form-label">Drive Description</label>
@@ -141,10 +141,10 @@ export default {
       </div>
 
       <div v-else>
-        <div class="card p-3 mb-3">
-          <h6>Active Drives</h6>
+        <div class="card shadow-sm border-0 p-3 mb-3">
+          <h6 class="fw-semibold">Active Drives</h6>
           <div class="table-responsive">
-            <table class="table table-sm table-bordered mb-0">
+            <table class="table table-hover align-middle mb-0">
               <thead><tr><th>Drive</th><th>Deadline</th><th>Action</th></tr></thead>
               <tbody>
                 <tr v-if="!activeDrives.length"><td colspan="3" class="text-center text-muted">No active drives</td></tr>
@@ -158,8 +158,8 @@ export default {
           </div>
         </div>
 
-        <div class="card p-3 mb-3">
-          <h6>Applicants by Drive</h6>
+        <div class="card shadow-sm border-0 p-3 mb-3">
+          <h6 class="fw-semibold">Applicants by Drive</h6>
           <label class="form-label">Select Active Drive</label>
           <select class="form-select mb-2" v-model="selectedDriveId" @change="loadApplicants">
             <option value="">Select drive</option>
@@ -167,14 +167,14 @@ export default {
           </select>
 
           <div class="table-responsive">
-            <table class="table table-sm table-bordered mb-0">
+            <table class="table table-hover align-middle mb-0">
               <thead><tr><th>Student</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 <tr v-if="!applicants.length"><td colspan="4" class="text-center text-muted">No applicants found</td></tr>
                 <tr v-for="a in applicants" :key="a.application_id">
                   <td>{{a.student_name}}</td>
                   <td>{{a.student_email}}</td>
-                  <td>{{a.status}}</td>
+                  <td><span class="badge status-badge text-bg-info">{{a.status}}</span></td>
                   <td class="d-flex gap-1 flex-wrap">
                     <button class="btn btn-sm btn-outline-primary" @click="viewApplicant(a)">View Details</button>
                     <button class="btn btn-sm btn-info" @click="updateApplicantStatus(a, 'SHORTLISTED')">Shortlist</button>
@@ -187,8 +187,8 @@ export default {
           </div>
         </div>
 
-        <div v-if="selectedApplicant" class="card p-3">
-          <h6>Applicant Details</h6>
+        <div v-if="selectedApplicant" class="card shadow-sm border-0 p-3">
+          <h6 class="fw-semibold">Applicant Details</h6>
           <p class="mb-1"><strong>Name:</strong> {{selectedApplicant.student_name}}</p>
           <p class="mb-1"><strong>Email:</strong> {{selectedApplicant.student_email}}</p>
           <p class="mb-1"><strong>Branch:</strong> {{selectedApplicant.branch}}</p>
@@ -199,8 +199,8 @@ export default {
         </div>
       </div>
 
-      <div class="text-success mt-2">{{message}}</div>
-      <div class="text-danger mt-1">{{error}}</div>
+      <div class="alert alert-success py-2 mt-3 mb-0" v-if="message">{{message}}</div>
+      <div class="alert alert-danger py-2 mt-3 mb-0" v-if="error">{{error}}</div>
     </div>
   `,
 };

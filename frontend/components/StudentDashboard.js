@@ -131,17 +131,17 @@ export default {
     },
   },
   template: `
-    <div>
+    <div class="glass-card p-3 p-md-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Student Dashboard</h4>
+        <h4 class="section-title mb-0">Student Dashboard</h4>
         <div class="d-flex gap-2">
           <button v-if="section==='dashboard'" class="btn btn-outline-primary" @click="openEditProfile">Edit Profile</button>
           <button class="btn btn-outline-secondary" @click="exportCsv">Export CSV</button>
         </div>
       </div>
 
-      <div v-if="section==='edit-profile'" class="card p-3 mb-3">
-        <h6>Edit Profile</h6>
+      <div v-if="section==='edit-profile'" class="card shadow-sm border-0 p-3 mb-3">
+        <h6 class="fw-semibold">Edit Profile</h6>
         <label class="form-label">Branch</label>
         <input class="form-control mb-2" v-model="profileDraft.branch" placeholder="e.g. CSE" />
         <label class="form-label">Graduation Year</label>
@@ -161,9 +161,9 @@ export default {
       </div>
 
       <div v-else>
-        <div class="card p-3 mb-3">
-          <h6>Profile Snapshot</h6>
-          <div class="row">
+        <div class="card shadow-sm border-0 p-3 mb-3">
+          <h6 class="fw-semibold">Profile Snapshot</h6>
+          <div class="row g-2">
             <div class="col-md-3"><strong>Branch:</strong> {{ profile.branch || 'Not set' }}</div>
             <div class="col-md-3"><strong>Year:</strong> {{ profile.graduation_year }}</div>
             <div class="col-md-3"><strong>CGPA:</strong> {{ profile.cgpa }}</div>
@@ -171,9 +171,9 @@ export default {
           </div>
         </div>
 
-        <div class="card p-3 mb-3">
+        <div class="card shadow-sm border-0 p-3 mb-3">
           <div class="d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Available Drives</h6>
+            <h6 class="fw-semibold mb-0">Available Drives</h6>
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="fitProfileCheck" v-model="fitProfile" @change="toggleFitProfile" />
               <label class="form-check-label" for="fitProfileCheck">Filter to fit profile</label>
@@ -194,16 +194,14 @@ export default {
           </ul>
           <div class="d-flex justify-content-center gap-2 mt-3" v-if="drivesPage.total_pages > 1">
             <button class="btn btn-sm btn-outline-secondary" @click="gotoPage(drivesPage.page-1)">Prev</button>
-            <button class="btn btn-sm"
-              :class="p===drivesPage.page ? 'btn-primary':'btn-outline-primary'"
-              v-for="p in drivesPage.total_pages" :key="p" @click="gotoPage(p)">{{p}}</button>
+            <button class="btn btn-sm" :class="p===drivesPage.page ? 'btn-primary':'btn-outline-primary'" v-for="p in drivesPage.total_pages" :key="p" @click="gotoPage(p)">{{p}}</button>
             <button class="btn btn-sm btn-outline-secondary" @click="gotoPage(drivesPage.page+1)">Next</button>
           </div>
         </div>
 
-        <div class="card p-3 mb-3" v-if="selectedDrive">
+        <div class="card shadow-sm border-0 p-3 mb-3" v-if="selectedDrive">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="mb-0">Drive Details</h6>
+            <h6 class="fw-semibold mb-0">Drive Details</h6>
             <button class="btn btn-sm btn-outline-secondary" @click="clearDriveDetails">Close</button>
           </div>
           <p class="mb-1"><strong>Title:</strong> {{selectedDrive.title}}</p>
@@ -214,17 +212,20 @@ export default {
           <p class="mb-0"><strong>Company Description:</strong> {{selectedDrive.company.description || 'N/A'}}</p>
         </div>
 
-        <div class="card p-3">
-          <h6>Application History</h6>
+        <div class="card shadow-sm border-0 p-3">
+          <h6 class="fw-semibold">Application History</h6>
           <ul class="list-group">
-            <li class="list-group-item" v-for="h in history" :key="h.application_id">{{h.drive_title}} - {{statusLabel(h.status)}}</li>
+            <li class="list-group-item d-flex justify-content-between" v-for="h in history" :key="h.application_id">
+              <span>{{h.drive_title}}</span>
+              <span class="badge status-badge text-bg-primary">{{statusLabel(h.status)}}</span>
+            </li>
             <li class="list-group-item text-muted text-center" v-if="!history.length">No application history yet</li>
           </ul>
         </div>
       </div>
 
-      <div class="text-success mt-2">{{message}}</div>
-      <div class="text-danger mt-1">{{error}}</div>
+      <div class="alert alert-success py-2 mt-3 mb-0" v-if="message">{{message}}</div>
+      <div class="alert alert-danger py-2 mt-3 mb-0" v-if="error">{{error}}</div>
     </div>
   `,
 };

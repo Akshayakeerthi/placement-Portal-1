@@ -32,20 +32,35 @@ export default {
   },
   template: `
     <div class="row justify-content-center">
-      <div class="col-lg-6 card shadow-sm p-4">
-        <h4 class="mb-3">{{ mode === 'login' ? 'Login' : 'Register' }}</h4>
-        <div class="mb-2" v-if="mode==='register'"><input class="form-control" v-model="form.name" placeholder="Name" /></div>
-        <div class="mb-2"><input class="form-control" v-model="form.email" placeholder="Email" /></div>
-        <div class="mb-2"><input class="form-control" type="password" v-model="form.password" placeholder="Password" /></div>
-        <div class="mb-3" v-if="mode==='register'">
-          <select class="form-select" v-model="form.role">
-            <option value="STUDENT">Student</option>
-            <option value="COMPANY">Company</option>
-          </select>
+      <div class="col-lg-6">
+        <div class="glass-card p-4">
+          <h4 class="section-title mb-2">{{ mode === 'login' ? 'Login to Your Account' : 'Create an Account' }}</h4>
+          <p class="text-muted mb-3">Access opportunities, manage drives, and track placements in one place.</p>
+
+          <div class="mb-2" v-if="mode==='register'">
+            <label class="form-label">Full Name</label>
+            <input class="form-control" v-model="form.name" placeholder="Enter your name" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Email</label>
+            <input class="form-control" v-model="form.email" placeholder="Enter email" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" v-model="form.password" placeholder="Enter password" />
+          </div>
+          <div class="mb-3" v-if="mode==='register'">
+            <label class="form-label">Role</label>
+            <select class="form-select" v-model="form.role">
+              <option value="STUDENT">Student</option>
+              <option value="COMPANY">Company</option>
+            </select>
+          </div>
+
+          <button :disabled="loading" class="btn btn-primary w-100" @click="submit">{{ loading ? 'Please wait...' : (mode==='login' ? 'Login' : 'Register & Login') }}</button>
+          <button class="btn btn-link mt-2" @click="mode = (mode==='login' ? 'register':'login')">Switch to {{ mode==='login' ? 'Register' : 'Login' }}</button>
+          <div class="alert alert-danger py-2 mt-2 mb-0" v-if="error">{{ error }}</div>
         </div>
-        <button :disabled="loading" class="btn btn-primary w-100" @click="submit">{{ loading ? 'Please wait...' : (mode==='login' ? 'Login' : 'Register & Login') }}</button>
-        <button class="btn btn-link mt-2" @click="mode = (mode==='login' ? 'register':'login')">Switch to {{ mode==='login' ? 'Register' : 'Login' }}</button>
-        <div class="text-danger">{{ error }}</div>
       </div>
     </div>
   `,

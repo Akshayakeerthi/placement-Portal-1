@@ -26,13 +26,17 @@ createApp({
   },
   template: `
     <div>
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h3 class="mb-0">Placement Portal Application v2</h3>
-          <small v-if="role">Welcome, {{name}} ({{role}})</small>
+      <div class="top-gradient p-4 mb-4 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h2 class="mb-1">Placement Portal Application</h2>
+            <p class="mb-0 opacity-75">Premium dashboard experience for students, companies, and admins.</p>
+            <small v-if="role" class="d-block mt-2">Welcome, {{name}} ({{role}})</small>
+          </div>
+          <button v-if="role" class="btn btn-light text-danger" @click="logout">Logout</button>
         </div>
-        <button v-if="role" class="btn btn-outline-danger" @click="logout">Logout</button>
       </div>
+
       <AuthView v-if="!role" @logged-in="onLoggedIn" />
       <AdminDashboard v-else-if="role==='ADMIN'" />
       <CompanyDashboard v-else-if="role==='COMPANY'" />

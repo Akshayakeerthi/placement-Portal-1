@@ -76,26 +76,29 @@ export default {
     },
   },
   template: `
-    <div>
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h4 class="mb-0">Admin Dashboard</h4>
-        <button class="btn btn-sm btn-outline-secondary" @click="refreshAll">Refresh</button>
+    <div class="glass-card p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="section-title mb-0">Admin Dashboard</h4>
+        <button class="btn btn-outline-secondary btn-sm" @click="refreshAll">Refresh</button>
       </div>
 
-      <div class="row g-2 mb-3">
-        <div class="col-md-3" v-for="(v,k) in counts" :key="k">
-          <div class="card p-2 h-100">
-            <small class="text-muted text-uppercase">{{k}}</small>
-            <h5 class="mb-0">{{v}}</h5>
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3" v-for="(v,k) in counts" :key="k">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <small class="text-muted text-uppercase">{{k}}</small>
+              <h5 class="mb-0 mt-1">{{v}}</h5>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="input-group mb-3">
+        <span class="input-group-text">🔎</span>
         <input class="form-control" v-model="q" @input="onSearchInput" placeholder="Search students, companies, or drives"/>
       </div>
 
-      <ul class="nav nav-tabs mb-3">
+      <ul class="nav nav-pills mb-3">
         <li class="nav-item"><button class="nav-link" :class="{active: activeTab==='students'}" @click="activeTab='students'">Students</button></li>
         <li class="nav-item"><button class="nav-link" :class="{active: activeTab==='companies'}" @click="activeTab='companies'">Companies</button></li>
         <li class="nav-item"><button class="nav-link" :class="{active: activeTab==='drives'}" @click="activeTab='drives'">Drives</button></li>
@@ -104,49 +107,39 @@ export default {
       <div v-if="loading" class="alert alert-info py-2">Refreshing data...</div>
       <div v-if="error" class="alert alert-danger py-2">{{error}}</div>
 
-      <div class="card mb-3" v-if="activeTab==='students'">
-        <div class="card-header">Registered Students</div>
+      <div class="card shadow-sm mb-3" v-if="activeTab==='students'">
+        <div class="card-header fw-semibold">Registered Students</div>
         <div class="table-responsive">
-          <table class="table table-sm table-bordered mb-0">
+          <table class="table table-hover align-middle mb-0">
             <thead><tr><th>Name</th><th>Email</th><th>Branch</th><th>CGPA</th><th>Year</th><th>Action</th></tr></thead>
             <tbody>
               <tr v-if="!students.length"><td colspan="6" class="text-center text-muted">No students found</td></tr>
               <tr v-for="s in students" :key="s.user_id">
                 <td>{{s.name}}</td><td>{{s.email}}</td><td>{{s.branch}}</td><td>{{s.cgpa}}</td><td>{{s.graduation_year}}</td>
-                <td>
-                  <button class="btn btn-sm btn-warning" @click="toggleBlacklist(s.user_id, !s.blacklisted)">
-                    {{s.blacklisted?'Unblacklist':'Blacklist'}}
-                  </button>
-                </td>
+                <td><button class="btn btn-sm btn-warning" @click="toggleBlacklist(s.user_id, !s.blacklisted)">{{s.blacklisted?'Unblacklist':'Blacklist'}}</button></td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="card mb-3" v-if="activeTab==='companies'">
-        <div class="card-header">Registered Companies</div>
+      <div class="card shadow-sm mb-3" v-if="activeTab==='companies'">
+        <div class="card-header fw-semibold">Registered Companies</div>
         <div class="table-responsive">
-          <table class="table table-sm table-bordered mb-0">
+          <table class="table table-hover align-middle mb-0">
             <thead><tr><th>Company</th><th>Email</th><th>Approved</th><th>Action</th></tr></thead>
             <tbody>
               <tr v-if="!companies.length"><td colspan="4" class="text-center text-muted">No companies found</td></tr>
               <tr v-for="c in companies" :key="c.company_id">
                 <td>{{c.company_name}}</td>
                 <td>{{c.email}}</td>
-                <td>
-                  <span class="badge" :class="c.approved ? 'text-bg-success' : 'text-bg-secondary'">
-                    {{ c.approved ? 'Approved' : 'Pending' }}
-                  </span>
-                </td>
+                <td><span class="badge status-badge" :class="c.approved ? 'text-bg-success' : 'text-bg-secondary'">{{ c.approved ? 'Approved' : 'Pending' }}</span></td>
                 <td class="d-flex gap-1">
                   <template v-if="!c.approved">
                     <button class="btn btn-sm btn-success" @click="setCompanyApproval(c.company_id, true)">Approve</button>
                     <button class="btn btn-sm btn-outline-danger" @click="setCompanyApproval(c.company_id, false)">Reject</button>
                   </template>
-                  <button class="btn btn-sm btn-warning" @click="toggleBlacklist(c.user_id, !c.blacklisted)">
-                    {{c.blacklisted?'Unblacklist':'Blacklist'}}
-                  </button>
+                  <button class="btn btn-sm btn-warning" @click="toggleBlacklist(c.user_id, !c.blacklisted)">{{c.blacklisted?'Unblacklist':'Blacklist'}}</button>
                 </td>
               </tr>
             </tbody>
@@ -154,10 +147,10 @@ export default {
         </div>
       </div>
 
-      <div class="card" v-if="activeTab==='drives'">
-        <div class="card-header">Placement Drives</div>
+      <div class="card shadow-sm" v-if="activeTab==='drives'">
+        <div class="card-header fw-semibold">Placement Drives</div>
         <div class="table-responsive">
-          <table class="table table-sm table-bordered mb-0">
+          <table class="table table-hover align-middle mb-0">
             <thead><tr><th>Drive</th><th>Company</th><th>Deadline</th><th>Status</th><th>Action</th></tr></thead>
             <tbody>
               <tr v-if="!drives.length"><td colspan="5" class="text-center text-muted">No drives found</td></tr>
@@ -165,12 +158,8 @@ export default {
                 <td>{{d.title}}</td>
                 <td>{{d.company_name}}</td>
                 <td>{{d.deadline}}</td>
-                <td>
-                  <span class="badge" :class="d.closed ? 'text-bg-dark' : (d.approved ? 'text-bg-success' : 'text-bg-secondary')">
-                    {{ d.closed ? 'Closed' : (d.approved ? 'Approved' : 'Pending') }}
-                  </span>
-                </td>
-                <td class="d-flex gap-1">
+                <td><span class="badge status-badge" :class="d.closed ? 'text-bg-dark' : (d.approved ? 'text-bg-success' : 'text-bg-secondary')">{{ d.closed ? 'Closed' : (d.approved ? 'Approved' : 'Pending') }}</span></td>
+                <td class="d-flex gap-1 flex-wrap">
                   <template v-if="!d.approved && !d.closed">
                     <button class="btn btn-sm btn-success" @click="setDriveApproval(d.drive_id, true)">Approve</button>
                     <button class="btn btn-sm btn-outline-danger" @click="setDriveApproval(d.drive_id, false)">Reject</button>
@@ -184,10 +173,9 @@ export default {
         </div>
       </div>
 
-
-      <div class="card mt-3" v-if="activeTab==='drives' && selectedDrive">
+      <div class="card mt-3 shadow-sm" v-if="activeTab==='drives' && selectedDrive">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Drive Details</span>
+          <span class="fw-semibold">Drive Details</span>
           <button class="btn btn-sm btn-outline-secondary" @click="selectedDrive=null">Close</button>
         </div>
         <div class="card-body">
@@ -200,7 +188,7 @@ export default {
         </div>
       </div>
 
-      <div class="text-success mt-2">{{message}}</div>
+      <div class="alert alert-success py-2 mt-3 mb-0" v-if="message">{{message}}</div>
     </div>
   `,
 };
