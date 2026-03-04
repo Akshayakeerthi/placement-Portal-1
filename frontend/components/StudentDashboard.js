@@ -3,28 +3,54 @@ import api from '../services/api.js';
 export default {
   data() {
     return {
-      profile: { branch: '', graduation_year: 2025, cgpa: 7.0, resume_path: '' },
+      profile: { branch: '', graduation_year: new Date().getFullYear(), cgpa: 0, resume_path: '' },
       resumeFile: null,
-      drives: [],
       history: [],
       message: '',
       error: '',
       section: 'dashboard',
-      profileDraft: { branch: '', graduation_year: 2025, cgpa: 7.0, resume_path: '' },
+      profileDraft: { branch: '', graduation_year: new Date().getFullYear(), cgpa: 0, resume_path: '' },
+      drivesPage: { items: [], page: 1, per_page: 5, total: 0, total_pages: 1 },
+      fitProfile: false,
+      selectedDrive: null,
     };
   },
   async mounted() {
+    await this.loadProfile();
     await this.refresh();
   },
   methods: {
+    async loadProfile() {
+      const data = (await api.get('/student/profile')).data;
+      this.profile = {
+        branch: data.branch || '',
+        graduation_year: data.graduation_year || new Date().getFullYear(),
+        cgpa: data.cgpa || 0,
+        resume_path: data.resume_path || '',
+      };
+      this.profileDraft = { ...this.profile };
+    },
     async refresh() {
       try {
-        this.drives = (await api.get('/student/drives')).data;
+        await this.loadDrives(this.drivesPage.page);
         this.history = (await api.get('/student/applications')).data;
       } catch {
-        this.drives = [];
+        this.drivesPage = { items: [], page: 1, per_page: 5, total: 0, total_pages: 1 };
         this.history = [];
       }
+    },
+    async loadDrives(page = 1) {
+      const res = await api.get('/student/drives', {
+        params: { fit_profile: this.fitProfile, page, per_page: this.drivesPage.per_page },
+      });
+      this.drivesPage = res.data;
+    },
+    async toggleFitProfile() {
+      await this.loadDrives(1);
+    },
+    async gotoPage(page) {
+      if (page < 1 || page > this.drivesPage.total_pages) return;
+      await this.loadDrives(page);
     },
     openEditProfile() {
       this.profileDraft = { ...this.profile };
@@ -83,6 +109,12 @@ export default {
         this.error = e.response?.data?.error || 'Apply failed';
       }
     },
+    viewDriveDetails(drive) {
+      this.selectedDrive = drive;
+    },
+    clearDriveDetails() {
+      this.selectedDrive = null;
+    },
     statusLabel(status) {
       const labels = {
         APPLIED: 'Pending Action',
@@ -140,14 +172,46 @@ export default {
         </div>
 
         <div class="card p-3 mb-3">
-          <h6>Eligible Drives</h6>
-          <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between" v-for="d in drives" :key="d.id">
-              <span>{{d.title}} - {{d.company}} ({{d.deadline}})</span>
-              <button class="btn btn-sm btn-success" @click="apply(d.id)">Apply</button>
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Available Drives</h6>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="fitProfileCheck" v-model="fitProfile" @change="toggleFitProfile" />
+              <label class="form-check-label" for="fitProfileCheck">Filter to fit profile</label>
+            </div>
+          </div>
+          <ul class="list-group mt-2">
+            <li class="list-group-item d-flex justify-content-between align-items-center" v-for="d in drivesPage.items" :key="d.id">
+              <div>
+                <div><strong>{{d.title}}</strong> - {{d.company.name}}</div>
+                <small class="text-muted">Deadline: {{d.deadline}} | Min CGPA: {{d.min_cgpa}} | Max Passing Year: {{d.graduation_year}}</small>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" @click="viewDriveDetails(d)">View Details</button>
+                <button class="btn btn-sm btn-success" :disabled="!d.eligible" @click="apply(d.id)">Apply</button>
+              </div>
             </li>
-            <li class="list-group-item text-muted text-center" v-if="!drives.length">No eligible drives available</li>
+            <li class="list-group-item text-muted text-center" v-if="!drivesPage.items.length">No drives available</li>
           </ul>
+          <div class="d-flex justify-content-center gap-2 mt-3" v-if="drivesPage.total_pages > 1">
+            <button class="btn btn-sm btn-outline-secondary" @click="gotoPage(drivesPage.page-1)">Prev</button>
+            <button class="btn btn-sm"
+              :class="p===drivesPage.page ? 'btn-primary':'btn-outline-primary'"
+              v-for="p in drivesPage.total_pages" :key="p" @click="gotoPage(p)">{{p}}</button>
+            <button class="btn btn-sm btn-outline-secondary" @click="gotoPage(drivesPage.page+1)">Next</button>
+          </div>
+        </div>
+
+        <div class="card p-3 mb-3" v-if="selectedDrive">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Drive Details</h6>
+            <button class="btn btn-sm btn-outline-secondary" @click="clearDriveDetails">Close</button>
+          </div>
+          <p class="mb-1"><strong>Title:</strong> {{selectedDrive.title}}</p>
+          <p class="mb-1"><strong>Description:</strong> {{selectedDrive.description}}</p>
+          <p class="mb-1"><strong>Eligibility:</strong> Branches {{selectedDrive.eligible_branches}}, CGPA >= {{selectedDrive.min_cgpa}}, Passing Year <= {{selectedDrive.graduation_year}}</p>
+          <p class="mb-1"><strong>Company:</strong> {{selectedDrive.company.name}}</p>
+          <p class="mb-1"><strong>Company Website:</strong> {{selectedDrive.company.website || 'N/A'}}</p>
+          <p class="mb-0"><strong>Company Description:</strong> {{selectedDrive.company.description || 'N/A'}}</p>
         </div>
 
         <div class="card p-3">

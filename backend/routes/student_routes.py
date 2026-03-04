@@ -11,6 +11,13 @@ from backend.utils.validators import ValidationError
 bp = Blueprint("student", __name__, url_prefix="/api/student")
 
 
+@bp.get("/profile")
+@role_required("STUDENT")
+def get_profile():
+    user = get_current_user()
+    return jsonify(StudentService.get_profile(user.id))
+
+
 @bp.post("/profile")
 @role_required("STUDENT")
 def save_profile():
@@ -56,7 +63,10 @@ def upload_resume():
 @role_required("STUDENT")
 def drives():
     user = get_current_user()
-    return jsonify(StudentService.approved_eligible_drives(user.id))
+    fit_profile = request.args.get("fit_profile", "false").lower() == "true"
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 5))
+    return jsonify(StudentService.list_drives(user.id, fit_profile=fit_profile, page=page, per_page=per_page))
 
 
 @bp.post("/drives/<int:drive_id>/apply")

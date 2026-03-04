@@ -12,6 +12,7 @@ export default {
       error: '',
       loading: false,
       activeTab: 'students',
+      selectedDrive: null,
     };
   },
   async mounted() {
@@ -68,6 +69,10 @@ export default {
       await api.patch(`/admin/drives/${driveId}/close`);
       this.message = 'Drive closed';
       await this.refreshAll();
+    },
+
+    viewDriveDetails(drive) {
+      this.selectedDrive = drive;
     },
   },
   template: `
@@ -170,11 +175,28 @@ export default {
                     <button class="btn btn-sm btn-success" @click="setDriveApproval(d.drive_id, true)">Approve</button>
                     <button class="btn btn-sm btn-outline-danger" @click="setDriveApproval(d.drive_id, false)">Reject</button>
                   </template>
+                  <button class="btn btn-sm btn-outline-primary" @click="viewDriveDetails(d)">View Details</button>
                   <button v-if="d.approved && !d.closed" class="btn btn-sm btn-outline-dark" @click="closeDrive(d.drive_id)">Close Drive</button>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+
+      <div class="card mt-3" v-if="activeTab==='drives' && selectedDrive">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Drive Details</span>
+          <button class="btn btn-sm btn-outline-secondary" @click="selectedDrive=null">Close</button>
+        </div>
+        <div class="card-body">
+          <p class="mb-1"><strong>Title:</strong> {{selectedDrive.title}}</p>
+          <p class="mb-1"><strong>Description:</strong> {{selectedDrive.description}}</p>
+          <p class="mb-1"><strong>Eligibility:</strong> Branches {{selectedDrive.eligible_branches}}, CGPA >= {{selectedDrive.min_cgpa}}, Passing Year <= {{selectedDrive.graduation_year}}</p>
+          <p class="mb-1"><strong>Company:</strong> {{selectedDrive.company_name}}</p>
+          <p class="mb-1"><strong>Company Website:</strong> {{selectedDrive.company_website || 'N/A'}}</p>
+          <p class="mb-0"><strong>Company Description:</strong> {{selectedDrive.company_description || 'N/A'}}</p>
         </div>
       </div>
 

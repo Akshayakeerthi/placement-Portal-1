@@ -138,7 +138,13 @@ class AdminService:
             {
                 "drive_id": d.id,
                 "title": d.title,
+                "description": d.description,
+                "eligible_branches": d.eligible_branches,
+                "min_cgpa": d.min_cgpa,
+                "graduation_year": d.graduation_year,
                 "company_name": c.company_name,
+                "company_website": c.website,
+                "company_description": c.description,
                 "approved": d.approved,
                 "closed": d.closed or d.deadline < now,
                 "deadline": d.deadline.isoformat(),

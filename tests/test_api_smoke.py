@@ -111,7 +111,7 @@ class ApiSmokeTests(unittest.TestCase):
 
         r = self.client.get("/api/student/drives", headers={"Authorization": f"Bearer {student_token}"})
         self.assertEqual(r.status_code, 200)
-        self.assertGreaterEqual(len(r.get_json()), 1)
+        self.assertGreaterEqual(len(r.get_json()["items"]), 1)
 
         r = self.client.post(
             f"/api/student/drives/{drive_id}/apply",
@@ -174,7 +174,6 @@ class ApiSmokeTests(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertTrue(r.get_json()["closed"])
 
-
     def test_student_profile_allows_past_graduation_year(self):
         token = self._register_and_login("Alumni", "alumni@test.com", "STUDENT")
         r = self.client.post(
@@ -184,6 +183,54 @@ class ApiSmokeTests(unittest.TestCase):
         )
         self.assertEqual(r.status_code, 200)
 
+    def test_drive_eligibility_allows_on_or_before_passing_year(self):
+        company_token = self._register_and_login("Company4", "company4@test.com", "COMPANY")
+        student_token = self._register_and_login("Student4", "student4@test.com", "STUDENT")
+        admin_token = self._admin_token()
+
+        r = self.client.post(
+            "/api/company/profile",
+            headers={"Authorization": f"Bearer {company_token}"},
+            json={"company_name": "Year Corp", "website": "https://year.test", "description": "desc"},
+        )
+        company_id = r.get_json()["id"]
+        self.client.patch(
+            f"/api/admin/companies/{company_id}/approval",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={"approved": True},
+        )
+
+        deadline = (datetime.utcnow() + timedelta(days=5)).isoformat()
+        r = self.client.post(
+            "/api/company/drives",
+            headers={"Authorization": f"Bearer {company_token}"},
+            json={
+                "title": "Legacy Eligible",
+                "description": "Hiring",
+                "eligible_branches": ["CSE"],
+                "min_cgpa": 7.0,
+                "graduation_year": 2026,
+                "deadline": deadline,
+            },
+        )
+        drive_id = r.get_json()["id"]
+        self.client.patch(
+            f"/api/admin/drives/{drive_id}/approval",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={"approved": True},
+        )
+
+        self.client.post(
+            "/api/student/profile",
+            headers={"Authorization": f"Bearer {student_token}"},
+            json={"branch": "CSE", "graduation_year": 2020, "cgpa": 8.0},
+        )
+
+        r = self.client.post(
+            f"/api/student/drives/{drive_id}/apply",
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+        self.assertEqual(r.status_code, 201)
 
 
 if __name__ == "__main__":
