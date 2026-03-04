@@ -147,7 +147,33 @@ Open: `http://127.0.0.1:5000`
 celery -A backend.celery_worker.celery_app worker -B --loglevel=info
 ```
 
-### 6) (Optional) Run automated smoke tests
+
+### 6) Run with Docker Compose (optional)
+
+Build and start all services (Flask, Redis, Celery worker, Celery beat):
+
+```bash
+docker compose up --build
+```
+
+Run in background:
+
+```bash
+docker compose up --build -d
+```
+
+Stop all services:
+
+```bash
+docker compose down
+```
+
+The Docker setup includes:
+- `Dockerfile` for the Flask/Celery runtime image
+- `docker-compose.yml` with services: `redis`, `flask`, `celery`, `celery_beat`
+- Flask service auto-runs `flask init-db` before starting the server
+
+### 7) (Optional) Run automated smoke tests
 
 #### Linux / macOS / WSL
 
