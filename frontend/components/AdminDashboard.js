@@ -11,6 +11,7 @@ export default {
       message: '',
       error: '',
       loading: false,
+      activeTab: 'students',
     };
   },
   async mounted() {
@@ -87,15 +88,18 @@ export default {
 
       <div class="input-group mb-3">
         <input class="form-control" v-model="q" @input="onSearchInput" placeholder="Search students, companies, or drives"/>
-        <button class="btn btn-outline-primary" @click="searchStudents">Students</button>
-        <button class="btn btn-outline-secondary" @click="searchCompanies">Companies</button>
-        <button class="btn btn-outline-dark" @click="loadDrives">Drives</button>
       </div>
+
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><button class="nav-link" :class="{active: activeTab==='students'}" @click="activeTab='students'">Students</button></li>
+        <li class="nav-item"><button class="nav-link" :class="{active: activeTab==='companies'}" @click="activeTab='companies'">Companies</button></li>
+        <li class="nav-item"><button class="nav-link" :class="{active: activeTab==='drives'}" @click="activeTab='drives'">Drives</button></li>
+      </ul>
 
       <div v-if="loading" class="alert alert-info py-2">Refreshing data...</div>
       <div v-if="error" class="alert alert-danger py-2">{{error}}</div>
 
-      <div class="card mb-3">
+      <div class="card mb-3" v-if="activeTab==='students'">
         <div class="card-header">Registered Students</div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered mb-0">
@@ -115,7 +119,7 @@ export default {
         </div>
       </div>
 
-      <div class="card mb-3">
+      <div class="card mb-3" v-if="activeTab==='companies'">
         <div class="card-header">Registered Companies</div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered mb-0">
@@ -145,7 +149,7 @@ export default {
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" v-if="activeTab==='drives'">
         <div class="card-header">Placement Drives</div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered mb-0">

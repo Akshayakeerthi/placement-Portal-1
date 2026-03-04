@@ -65,6 +65,11 @@ requirements.txt
 
 ---
 
+## Quick run paths
+
+- **Path A (Manual run):** Use steps 1-5 below (venv + redis + flask + celery).
+- **Path B (Docker Compose run):** Use step 6 directly; `docker compose up --build` handles startup for the full stack.
+
 ## Complete setup and run steps
 
 > Run all commands from project root: `placement-Portal-1/`

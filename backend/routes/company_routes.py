@@ -36,6 +36,14 @@ def list_drives():
     return jsonify(CompanyService.list_company_drives(user.id))
 
 
+@bp.patch("/drives/<int:drive_id>/close")
+@role_required("COMPANY")
+def close_drive(drive_id: int):
+    user = get_current_user()
+    drive = CompanyService.close_drive(user.id, drive_id)
+    return jsonify({"id": drive.id, "closed": drive.closed})
+
+
 @bp.get("/drives/<int:drive_id>/applicants")
 @role_required("COMPANY")
 def applicants(drive_id: int):

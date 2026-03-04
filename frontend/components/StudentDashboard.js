@@ -83,6 +83,16 @@ export default {
         this.error = e.response?.data?.error || 'Apply failed';
       }
     },
+    statusLabel(status) {
+      const labels = {
+        APPLIED: 'Pending Action',
+        SHORTLISTED: 'Shortlisted',
+        SELECTED: 'Selected',
+        REJECTED: 'Rejected',
+        INTERVIEW_SCHEDULED: 'Interview Scheduled',
+      };
+      return labels[status] || status;
+    },
     async exportCsv() {
       await api.post('/student/applications/export');
       this.message = 'CSV export queued';
@@ -143,7 +153,7 @@ export default {
         <div class="card p-3">
           <h6>Application History</h6>
           <ul class="list-group">
-            <li class="list-group-item" v-for="h in history" :key="h.application_id">{{h.drive_title}} - {{h.status}}</li>
+            <li class="list-group-item" v-for="h in history" :key="h.application_id">{{h.drive_title}} - {{statusLabel(h.status)}}</li>
             <li class="list-group-item text-muted text-center" v-if="!history.length">No application history yet</li>
           </ul>
         </div>

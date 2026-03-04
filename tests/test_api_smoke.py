@@ -125,6 +125,56 @@ class ApiSmokeTests(unittest.TestCase):
         )
         self.assertEqual(r.status_code, 400)
 
+    def test_company_can_close_drive(self):
+        company_token = self._register_and_login("Company3", "company3@test.com", "COMPANY")
+        admin_token = self._admin_token()
+
+        r = self.client.post(
+            "/api/company/profile",
+            headers={"Authorization": f"Bearer {company_token}"},
+            json={"company_name": "Close Corp", "website": "https://close.test", "description": "desc"},
+        )
+        self.assertEqual(r.status_code, 200)
+        company_id = r.get_json()["id"]
+
+        r = self.client.patch(
+            f"/api/admin/companies/{company_id}/approval",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={"approved": True},
+        )
+        self.assertEqual(r.status_code, 200)
+
+        deadline = (datetime.utcnow() + timedelta(days=10)).isoformat()
+        r = self.client.post(
+            "/api/company/drives",
+            headers={"Authorization": f"Bearer {company_token}"},
+            json={
+                "title": "Close Me",
+                "description": "Hiring",
+                "eligible_branches": ["CSE"],
+                "min_cgpa": 7.0,
+                "graduation_year": 2026,
+                "deadline": deadline,
+            },
+        )
+        self.assertEqual(r.status_code, 201)
+        drive_id = r.get_json()["id"]
+
+        r = self.client.patch(
+            f"/api/admin/drives/{drive_id}/approval",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={"approved": True},
+        )
+        self.assertEqual(r.status_code, 200)
+
+        r = self.client.patch(
+            f"/api/company/drives/{drive_id}/close",
+            headers={"Authorization": f"Bearer {company_token}"},
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.get_json()["closed"])
+
+
     def test_student_profile_allows_past_graduation_year(self):
         token = self._register_and_login("Alumni", "alumni@test.com", "STUDENT")
         r = self.client.post(

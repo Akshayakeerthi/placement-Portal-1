@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from backend.extensions import db
 from backend.models import Application, ApplicationStatus, CompanyProfile, PlacementDrive
 from backend.utils.validators import ValidationError, validate_drive
@@ -43,16 +45,35 @@ class CompanyService:
     @staticmethod
     def list_company_drives(user_id: int):
         company = CompanyProfile.query.filter_by(user_id=user_id).first_or_404()
-        return [
-            {
-                "id": drive.id,
-                "title": drive.title,
-                "approved": drive.approved,
-                "closed": drive.closed,
-                "deadline": drive.deadline.isoformat(),
-            }
-            for drive in company.drives
-        ]
+        now = datetime.utcnow()
+        drives = []
+        dirty = False
+        for drive in company.drives:
+            drive.close_if_expired()
+            if drive.closed and drive.deadline >= now:
+                drive.closed = True
+            if drive.deadline < now and not drive.closed:
+                dirty = True
+            drives.append(
+                {
+                    "id": drive.id,
+                    "title": drive.title,
+                    "approved": drive.approved,
+                    "closed": drive.closed,
+                    "deadline": drive.deadline.isoformat(),
+                }
+            )
+        if dirty:
+            db.session.commit()
+        return drives
+
+    @staticmethod
+    def close_drive(user_id: int, drive_id: int):
+        company = CompanyProfile.query.filter_by(user_id=user_id).first_or_404()
+        drive = PlacementDrive.query.filter_by(company_id=company.id, id=drive_id).first_or_404()
+        drive.closed = True
+        db.session.commit()
+        return drive
 
     @staticmethod
     def list_applicants(user_id: int, drive_id: int):
@@ -64,6 +85,10 @@ class CompanyService:
                 "application_id": app.id,
                 "student_name": app.student.user.name,
                 "student_email": app.student.user.email,
+                "branch": app.student.branch,
+                "cgpa": app.student.cgpa,
+                "graduation_year": app.student.graduation_year,
+                "resume_path": app.student.resume_path,
                 "status": app.status,
                 "interview_schedule": app.interview_schedule,
             }
