@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+<div class="card"><div class="card-body">
+  <h4>Student Application</h4>
+  <p><strong>Student Name:</strong> {{ app_row.full_name }}</p>
+  <p><strong>Department:</strong> {{ app_row.department }}</p>
+  <p><strong>Drive:</strong> {{ app_row.job_title }}</p>
+  <p><strong>Skills:</strong> {{ app_row.skills or '-' }}</p>
+
+  <form method="post" action="{{ url_for('company_update_application', application_id=app_row.id) }}" class="row g-2">
+    <input type="hidden" name="drive_id" value="{{ app_row.drive_id }}">
+    <div class="col-md-4">
+      <select name="status" class="form-select">
+        {% for st in ['applied','shortlisted','selected','rejected'] %}
+        <option value="{{ st }}" {% if app_row.status==st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-8"><input name="remarks" value="{{ app_row.remarks or '' }}" placeholder="remark" class="form-control"></div>
+    <div class="col-12"><button class="btn btn-success">save</button> <a class="btn btn-outline-secondary" href="{{ url_for('company_drive_applications', drive_id=app_row.drive_id) }}">back</a></div>
+  </form>
+</div></div></div></div>
+{% endblock %}

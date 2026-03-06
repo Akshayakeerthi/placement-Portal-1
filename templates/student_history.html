@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h4>Student Application History</h4>
+  <a class="btn btn-outline-primary" href="{{ url_for('student_dashboard') }}">back</a>
+</div>
+<p><strong>Student Name:</strong> {{ student.full_name }}</p>
+<p><strong>Department:</strong> {{ student.department }}</p>
+<div class="card"><div class="card-body p-0">
+<table class="table table-sm mb-0">
+  <tr><th>Drive No.</th><th>Company</th><th>Job Title</th><th>Result</th><th>Remark</th><th>Date</th></tr>
+  {% for h in history %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ h.company_name }}</td>
+    <td>{{ h.job_title }}</td>
+    <td>{{ h.status }}</td>
+    <td>{{ h.remarks or 'None' }}</td>
+    <td>{{ h.application_date[:10] }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="text-center p-3">No history yet.</td></tr>
+  {% endfor %}
+</table>
+</div></div>
+{% endblock %}

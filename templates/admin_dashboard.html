@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3 class="mb-3 fw-bold">Admin Dashboard</h3>
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-5"><input name="search" value="{{ search }}" class="form-control" placeholder="Search student/company name, username or ID"></div>
+  <div class="col-md-2"><button class="btn btn-outline-primary w-100">Search</button></div>
+</form>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card dashboard-card shadow-sm">
+      <div class="card-header">Registered Companies</div>
+      <div class="card-body table-responsive p-0">
+        <table class="table table-modern table-hover mb-0">
+          <thead><tr><th>Company</th><th>Actions</th></tr></thead>
+          <tbody>
+          {% for c in companies %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ c.company_name }}</div>
+                <small class="text-muted">@{{ c.username }} | ID {{ c.id }}</small>
+              </td>
+              <td>
+                {% if not c.is_approved %}
+                <form method="post" action="{{ url_for('admin_approve_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-sm btn-success">Approve</button></form>
+                {% endif %}
+                <form method="post" action="{{ url_for('admin_blacklist_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-sm btn-danger">Blacklist</button></form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="2" class="text-center py-3">No companies found.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card dashboard-card shadow-sm">
+      <div class="card-header">Registered Students</div>
+      <div class="card-body table-responsive p-0">
+        <table class="table table-modern table-hover mb-0">
+          <thead><tr><th>Student</th><th>Department</th><th>Actions</th></tr></thead>
+          <tbody>
+          {% for s in students %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ s.full_name }}</div>
+                <small class="text-muted">@{{ s.username }} | ID {{ s.id }}</small>
+              </td>
+              <td>{{ s.department or '-' }}</td>
+              <td><form method="post" action="{{ url_for('admin_blacklist_student', user_id=s.id) }}"><button class="btn btn-sm btn-danger">Blacklist</button></form></td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="text-center py-3">No students found.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card dashboard-card shadow-sm mt-4">
+  <div class="card-header">Company Applications (Pending Approval)</div>
+  <div class="card-body table-responsive p-0">
+    <table class="table table-modern mb-0">
+      <thead><tr><th>Company</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for c in pending_companies %}
+      <tr>
+        <td>{{ c.company_name }}</td>
+        <td><form method="post" action="{{ url_for('admin_approve_company', user_id=c.id) }}"><button class="btn btn-sm btn-success">Approve</button></form></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="2" class="text-center py-3">No pending company applications.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card dashboard-card shadow-sm mt-4">
+  <div class="card-header">Ongoing Drives</div>
+  <div class="card-body p-3">
+    <p class="text-muted small mb-3">Only <strong>Pending</strong> and <strong>Approved</strong> drives appear here. Completed/Closed drives are removed automatically.</p>
+    <div class="table-responsive">
+      <table class="table table-modern table-hover mb-0">
+        <thead><tr><th>Drive ID</th><th>Drive Name</th><th>Company</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+        {% for d in drives %}
+        <tr>
+          <td>{{ d.id }}</td>
+          <td>{{ d.drive_name or d.job_title }}</td>
+          <td>{{ d.company_name }}</td>
+          <td><span class="badge {% if d.status == 'approved' %}text-bg-success{% else %}text-bg-warning{% endif %}">{{ d.status }}</span></td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin_drive_details', drive_id=d.id) }}">View details</a>
+            {% if d.status == 'pending' %}
+            <form method="post" action="{{ url_for('admin_update_drive_status', drive_id=d.id) }}" class="d-inline"><input type="hidden" name="status" value="approved"><button class="btn btn-sm btn-success">Approve</button></form>
+            {% elif d.status == 'approved' %}
+            <form method="post" action="{{ url_for('admin_update_drive_status', drive_id=d.id) }}" class="d-inline"><input type="hidden" name="status" value="closed"><button class="btn btn-sm btn-warning">Mark complete</button></form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center py-3">No ongoing drives.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card dashboard-card shadow-sm mt-4">
+  <div class="card-header">Recent Student Applications</div>
+  <div class="card-body table-responsive p-0">
+    <table class="table table-modern table-hover mb-0">
+      <thead><tr><th>#</th><th>Name</th><th>Drive</th><th>Company</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for a in student_applications %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ a.full_name }}</td>
+        <td>{{ a.job_title }}</td>
+        <td>{{ a.company_name }}</td>
+        <td>{{ a.application_date[:10] }}</td>
+        <td><span class="badge text-bg-secondary">{{ a.status }}</span></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center py-3">No applications yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

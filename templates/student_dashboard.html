@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Students' Dashboard</h3>
+  <div>
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('student_profile') }}">edit profile</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('student_history') }}">History</a>
+  </div>
+</div>
+<p>Welcome <strong>{{ profile.full_name }}</strong></p>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card"><div class="card-header">Organizations</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        {% for o in organizations %}
+        <tr><td>{{ o.company_name }}</td><td><a class="btn btn-sm btn-outline-primary" href="{{ o.website or '#' }}" target="_blank">view details</a></td></tr>
+        {% else %}
+        <tr><td class="p-3">No approved organizations.</td></tr>
+        {% endfor %}
+      </table>
+    </div></div>
+
+    <div class="card mt-3"><div class="card-header">Applied Drives</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        <tr><th>Sr No.</th><th>Drive Name</th><th>Company</th><th>Date</th><th></th></tr>
+        {% for a in applied_drives %}
+        <tr>
+          <td>{{ loop.index }}</td><td>{{ a.job_title }}</td><td>{{ a.company_name }}</td><td>{{ a.application_date[:10] }}</td>
+          <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('student_drive_details', drive_id=a.drive_id) }}">view details</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center p-3">No applied drives yet.</td></tr>
+        {% endfor %}
+      </table>
+    </div></div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card"><div class="card-header">Current Drives</div><div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        {% for d in current_drives %}
+        <tr>
+          <td>{{ d.drive_name or d.job_title }}</td>
+          <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('student_drive_details', drive_id=d.id) }}">view details</a></td>
+        </tr>
+        {% else %}
+        <tr><td class="p-3">No current drives.</td></tr>
+        {% endfor %}
+      </table>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
