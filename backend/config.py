@@ -27,3 +27,13 @@ class Config:
     ADMIN_NAME = os.getenv("ADMIN_NAME", "Placement Admin")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@ppa.local")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@123")
+
+    MAIL_FROM = os.getenv("MAIL_FROM", "noreply@ppa.local")
+    MAIL_SUPPRESS_SEND = os.getenv("MAIL_SUPPRESS_SEND", "0") == "1"
+    SMTP_HOST = os.getenv("SMTP_HOST", "")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
+    SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "0") == "1"
+    SMTP_USERNAME = os.getenv("SMTP_USERNAME")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+
+    CHAT_WEBHOOK_URL = os.getenv("CHAT_WEBHOOK_URL", "")

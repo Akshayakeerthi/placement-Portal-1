@@ -7,6 +7,7 @@ from flask import current_app
 from backend.extensions import celery_app
 from backend.models import PlacementDrive, StudentProfile, User, UserRole
 from backend.services.admin_service import AdminService
+from backend.utils.notifications import send_chat_webhook, send_email
 
 
 @celery_app.task(name="tasks.daily_reminder")
@@ -14,16 +15,49 @@ def daily_reminder_task():
     now = datetime.utcnow()
     in_two_days = now + timedelta(days=2)
 
-    drives = PlacementDrive.query.filter(
-        PlacementDrive.approved.is_(True),
-        PlacementDrive.closed.is_(False),
-        PlacementDrive.deadline >= now,
-        PlacementDrive.deadline <= in_two_days,
-    ).all()
+    drives = (
+        PlacementDrive.query.filter(
+            PlacementDrive.approved.is_(True),
+            PlacementDrive.closed.is_(False),
+            PlacementDrive.deadline >= now,
+            PlacementDrive.deadline <= in_two_days,
+        )
+        .order_by(PlacementDrive.deadline.asc())
+        .all()
+    )
+
+    if not drives:
+        return {"upcoming_drives": 0, "students_notified": 0, "delivery": "skipped"}
+
+    drive_lines = [f"- {d.title} (deadline: {d.deadline.isoformat()} UTC)" for d in drives]
+    body = (
+        "Hello Student,\n\n"
+        "This is your daily reminder for upcoming placement deadlines:\n"
+        + "\n".join(drive_lines)
+        + "\n\nPlease apply before the deadlines."
+    )
+
+    recipients = [
+        profile.user.email
+        for profile in StudentProfile.query.join(StudentProfile.user).all()
+        if profile.user and profile.user.email
+    ]
+    email_result = send_email(
+        subject="Daily Placement Deadline Reminder",
+        body=body,
+        recipients=recipients,
+    )
+
+    webhook_result = send_chat_webhook(
+        "Daily reminder: "
+        + ", ".join([f"{d.title} ({d.deadline.date().isoformat()})" for d in drives])
+    )
 
     return {
         "upcoming_drives": len(drives),
-        "students_notified": StudentProfile.query.count(),
+        "students_notified": len(recipients) if email_result.get("sent") else 0,
+        "email_result": email_result,
+        "chat_result": webhook_result,
     }
 
 
@@ -38,7 +72,9 @@ def monthly_report_task():
     <html><body>
       <h2>Placement Portal Monthly Report</h2>
       <p>Total Users: {data['total_users']}</p>
-      <p>Total Drives: {data['total_drives']}</p>
+      <p>Number of Drives Conducted: {data['total_drives']}</p>
+      <p>Number of Students Applied: {data['students_applied']}</p>
+      <p>Number of Students Selected: {data['students_selected']}</p>
       <p>Total Applications: {data['total_applications']}</p>
       <pre>{data['application_status_summary']}</pre>
     </body></html>
@@ -46,7 +82,19 @@ def monthly_report_task():
     report_file.write_text(html, encoding="utf-8")
 
     admin = User.query.filter_by(role=UserRole.ADMIN).first()
-    return {"report_file": str(report_file), "sent_to": admin.email if admin else current_app.config["ADMIN_EMAIL"]}
+    recipient = admin.email if admin else current_app.config["ADMIN_EMAIL"]
+    email_result = send_email(
+        subject="Monthly Placement Activity Report",
+        body="Please find the monthly placement activity report attached in HTML format.",
+        recipients=[recipient],
+        html=html,
+    )
+
+    return {
+        "report_file": str(report_file),
+        "sent_to": recipient,
+        "email_result": email_result,
+    }
 
 
 @celery_app.task(name="tasks.export_csv")

@@ -11,6 +11,7 @@ class ApiSmokeTests(unittest.TestCase):
     def setUpClass(cls):
         cls.app = create_app()
         cls.app.config["TESTING"] = True
+        cls.app.config["MAIL_SUPPRESS_SEND"] = True
 
     def setUp(self):
         with self.app.app_context():
@@ -19,13 +20,14 @@ class ApiSmokeTests(unittest.TestCase):
             runner = self.app.test_cli_runner()
             out = runner.invoke(args=["init-db"])
             assert out.exit_code == 0
+            self.app.extensions["sent_emails"] = []
 
         self.client = self.app.test_client()
 
     def _register_and_login(self, name, email, role):
         r = self.client.post(
             "/api/auth/register",
-            json={"name": name, "email": email, "password": "pass123", "role": role},
+            json={"name": name, "email": email, "password": "pass123", "confirm_password": "pass123", "role": role},
         )
         self.assertEqual(r.status_code, 201)
         r = self.client.post("/api/auth/login", json={"email": email, "password": "pass123"})
@@ -39,6 +41,39 @@ class ApiSmokeTests(unittest.TestCase):
         )
         self.assertEqual(r.status_code, 200)
         return r.get_json()["token"]
+
+
+    def test_registration_requires_confirm_password_match(self):
+        r = self.client.post(
+            "/api/auth/register",
+            json={
+                "name": "Mismatch",
+                "email": "mismatch@test.com",
+                "password": "pass123",
+                "confirm_password": "pass124",
+                "role": "STUDENT",
+            },
+        )
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("must match", r.get_json()["error"])
+
+    def test_registration_sends_success_email(self):
+        r = self.client.post(
+            "/api/auth/register",
+            json={
+                "name": "Mail User",
+                "email": "mailuser@test.com",
+                "password": "pass123",
+                "confirm_password": "pass123",
+                "role": "STUDENT",
+            },
+        )
+        self.assertEqual(r.status_code, 201)
+        with self.app.app_context():
+            sent = self.app.extensions.get("sent_emails", [])
+            self.assertGreaterEqual(len(sent), 1)
+            self.assertEqual(sent[-1]["recipients"], ["mailuser@test.com"])
+            self.assertIn("Registration successful", sent[-1]["subject"])
 
     def test_student_profile_and_resume_upload(self):
         token = self._register_and_login("Student", "student@test.com", "STUDENT")
@@ -231,6 +266,63 @@ class ApiSmokeTests(unittest.TestCase):
             headers={"Authorization": f"Bearer {student_token}"},
         )
         self.assertEqual(r.status_code, 201)
+
+
+
+    def test_scheduled_jobs_generate_and_send_notifications(self):
+        from backend.tasks.jobs import daily_reminder_task, monthly_report_task
+
+        company_token = self._register_and_login("Remind Company", "remindco@test.com", "COMPANY")
+        student_token = self._register_and_login("Remind Student", "remindstudent@test.com", "STUDENT")
+        admin_token = self._admin_token()
+
+        r = self.client.post(
+            "/api/company/profile",
+            headers={"Authorization": f"Bearer {company_token}"},
+            json={"company_name": "Notify Corp", "website": "https://notify.test", "description": "desc"},
+        )
+        company_id = r.get_json()["id"]
+        self.client.patch(
+            f"/api/admin/companies/{company_id}/approval",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={"approved": True},
+        )
+
+        deadline = (datetime.utcnow() + timedelta(days=1)).isoformat()
+        r = self.client.post(
+            "/api/company/drives",
+            headers={"Authorization": f"Bearer {company_token}"},
+            json={
+                "title": "Reminder Drive",
+                "description": "Hiring",
+                "eligible_branches": ["CSE"],
+                "min_cgpa": 7.0,
+                "graduation_year": 2026,
+                "deadline": deadline,
+            },
+        )
+        drive_id = r.get_json()["id"]
+        self.client.patch(
+            f"/api/admin/drives/{drive_id}/approval",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={"approved": True},
+        )
+
+        self.client.post(
+            "/api/student/profile",
+            headers={"Authorization": f"Bearer {student_token}"},
+            json={"branch": "CSE", "graduation_year": 2026, "cgpa": 8.2},
+        )
+        self.client.post(
+            f"/api/student/drives/{drive_id}/apply",
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        with self.app.app_context():
+            daily = daily_reminder_task()
+            monthly = monthly_report_task()
+            self.assertGreaterEqual(daily["upcoming_drives"], 1)
+            self.assertEqual(monthly["email_result"]["sent"], True)
 
 
 if __name__ == "__main__":

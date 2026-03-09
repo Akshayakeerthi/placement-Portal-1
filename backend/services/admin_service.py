@@ -159,9 +159,12 @@ class AdminService:
             .group_by(Application.status)
             .all()
         )
+        selected_count = status_summary.get("SELECTED", 0)
         return {
             "total_users": User.query.count(),
             "total_drives": PlacementDrive.query.count(),
             "total_applications": Application.query.count(),
+            "students_applied": Application.query.count(),
+            "students_selected": selected_count,
             "application_status_summary": status_summary,
         }

@@ -13,6 +13,7 @@ def register():
             name=payload["name"],
             email=payload["email"],
             password=payload["password"],
+            confirm_password=payload["confirm_password"],
             role=payload["role"],
         )
         return jsonify({"id": user.id, "email": user.email, "role": user.role}), 201

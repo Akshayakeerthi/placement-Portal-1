@@ -5,7 +5,7 @@ export default {
   data() {
     return {
       mode: 'login',
-      form: { name: '', email: '', password: '', role: 'STUDENT' },
+      form: { name: '', email: '', password: '', confirm_password: '', role: 'STUDENT' },
       loading: false,
       error: '',
     };
@@ -16,6 +16,9 @@ export default {
       this.loading = true;
       try {
         if (this.mode === 'register') {
+          if (this.form.password !== this.form.confirm_password) {
+            throw new Error('Password and confirm password must match');
+          }
           await api.post('/auth/register', this.form);
         }
         const res = await api.post('/auth/login', { email: this.form.email, password: this.form.password });
@@ -24,7 +27,7 @@ export default {
         localStorage.setItem('name', res.data.name);
         this.$emit('logged-in', res.data.role);
       } catch (e) {
-        this.error = e.response?.data?.error || 'Authentication failed';
+        this.error = e.response?.data?.error || e.message || 'Authentication failed';
       } finally {
         this.loading = false;
       }
@@ -48,6 +51,10 @@ export default {
           <div class="mb-2">
             <label class="form-label">Password</label>
             <input class="form-control" type="password" v-model="form.password" placeholder="Enter password" />
+          </div>
+          <div class="mb-2" v-if="mode==='register'">
+            <label class="form-label">Re-enter Password</label>
+            <input class="form-control" type="password" v-model="form.confirm_password" placeholder="Re-enter password" />
           </div>
           <div class="mb-3" v-if="mode==='register'">
             <label class="form-label">Role</label>

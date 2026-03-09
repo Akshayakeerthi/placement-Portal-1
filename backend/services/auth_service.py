@@ -1,14 +1,19 @@
+from flask import current_app
 from flask_jwt_extended import create_access_token
 
 from backend.extensions import db
 from backend.models import User, UserRole
+from backend.utils.notifications import send_email
 
 
 class AuthService:
     @staticmethod
-    def register(name: str, email: str, password: str, role: str):
+    def register(name: str, email: str, password: str, confirm_password: str, role: str):
         if role not in (UserRole.COMPANY, UserRole.STUDENT):
             raise ValueError("Only COMPANY/STUDENT can self-register")
+
+        if password != confirm_password:
+            raise ValueError("Password and confirm password must match")
 
         email = email.strip().lower()
         if User.query.filter_by(email=email).first():
@@ -19,6 +24,17 @@ class AuthService:
 
         db.session.add(user)
         db.session.commit()
+
+        subject = "Registration successful - Placement Portal"
+        body = (
+            f"Hello {user.name},\n\n"
+            "You have successfully registered on Placement Portal. "
+            "You can now log in and complete your profile.\n\n"
+            f"Role: {user.role}\n"
+            f"Support: {current_app.config['ADMIN_EMAIL']}\n"
+        )
+        send_email(subject=subject, body=body, recipients=[user.email])
+
         return user
 
     @staticmethod

@@ -52,8 +52,8 @@ requirements.txt
   - approved/eligible drives queries
   - search queries
 - Celery async jobs:
-  - daily reminders
-  - monthly report generation (HTML)
+  - daily reminders (email + optional chat webhook)
+  - monthly report generation (HTML + admin email)
   - CSV export for student history
 
 ## API modules
@@ -117,6 +117,19 @@ redis-cli -h 127.0.0.1 -p 6379 ping
 Should return `PONG`.
 
 > If Redis is not on localhost, set `REDIS_URL` before running Flask/Celery.
+
+
+### Notification environment variables (for reminders/reports)
+
+Set these before running Flask/Celery if you want real email/chat delivery:
+
+- `SMTP_HOST` (required for real email delivery)
+- `SMTP_PORT` (default: `25`)
+- `SMTP_USE_TLS` (`1` to enable TLS)
+- `SMTP_USERNAME`, `SMTP_PASSWORD` (optional auth)
+- `MAIL_FROM` (default: `noreply@ppa.local`)
+- `MAIL_SUPPRESS_SEND=1` (testing mode, captures emails in-memory)
+- `CHAT_WEBHOOK_URL` (optional Google Chat webhook URL for daily summary ping)
 
 ### 3) Configure Flask app and initialize DB
 
@@ -208,3 +221,8 @@ python -m unittest tests\test_api_smoke.py -v
 - SQLite is generated via SQLAlchemy programmatically.
 - No frameworks beyond Flask, SQLite, Redis, Celery, Vue, Bootstrap are used.
 - Keep Redis, Flask, and Celery in the same runtime environment (all WSL or all Windows) for easiest connectivity.
+
+
+### Registration payload
+
+`POST /api/auth/register` now expects: `name`, `email`, `password`, `confirm_password`, `role`.
