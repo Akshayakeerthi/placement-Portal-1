@@ -1,14 +1,27 @@
 import api from '../services/api.js';
 
 export default {
-  emits: ['logged-in'],
+  props: {
+    presetMode: { type: String, default: 'login' },
+    presetRole: { type: String, default: 'STUDENT' },
+    compact: { type: Boolean, default: false },
+  },
+  emits: ['logged-in', 'close'],
   data() {
     return {
-      mode: 'login',
-      form: { name: '', email: '', password: '', confirm_password: '', role: 'STUDENT' },
+      mode: this.presetMode,
+      form: { name: '', email: '', password: '', confirm_password: '', role: this.presetRole },
       loading: false,
       error: '',
     };
+  },
+  watch: {
+    presetMode(val) {
+      this.mode = val;
+    },
+    presetRole(val) {
+      this.form.role = val;
+    },
   },
   methods: {
     async submit() {
@@ -35,9 +48,12 @@ export default {
   },
   template: `
     <div class="row justify-content-center">
-      <div class="col-lg-6">
+      <div :class="compact ? 'col-lg-8' : 'col-lg-6'">
         <div class="glass-card p-4">
-          <h4 class="section-title mb-2">{{ mode === 'login' ? 'Login to Your Account' : 'Create an Account' }}</h4>
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h4 class="section-title mb-0">{{ mode === 'login' ? 'Login' : 'Create Account' }}</h4>
+            <button v-if="compact" class="btn btn-sm btn-outline-secondary" @click="$emit('close')">Close</button>
+          </div>
           <p class="text-muted mb-3">Access opportunities, manage drives, and track placements in one place.</p>
 
           <div class="mb-2" v-if="mode==='register'">
