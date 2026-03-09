@@ -191,7 +191,8 @@ docker compose down
 
 The Docker setup includes:
 - `Dockerfile` for the Flask/Celery runtime image
-- `docker-compose.yml` with services: `redis`, `flask`, `celery`, `celery_beat`
+- `docker-compose.yml` with services: `redis`, `mailpit`, `flask`, `celery`, `celery_beat`
+- Mailpit SMTP capture UI at `http://127.0.0.1:8025` (registration and scheduled emails)
 - Flask service auto-runs `flask init-db` before starting the server
 
 Admin login credentials (same for Docker and non-Docker runs):
@@ -226,3 +227,9 @@ python -m unittest tests\test_api_smoke.py -v
 ### Registration payload
 
 `POST /api/auth/register` now expects: `name`, `email`, `password`, `confirm_password`, `role`.
+
+
+### API behavior notes
+
+- `GET /api/student/drives` returns an empty paginated list until student profile is created (no 404).
+- `GET /api/company/drives` returns an empty list until company profile is created (no 404).

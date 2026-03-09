@@ -75,6 +75,21 @@ class ApiSmokeTests(unittest.TestCase):
             self.assertEqual(sent[-1]["recipients"], ["mailuser@test.com"])
             self.assertIn("Registration successful", sent[-1]["subject"])
 
+
+    def test_drives_listing_before_profile_returns_empty_not_404(self):
+        student_token = self._register_and_login("No Profile Student", "noprofile@student.com", "STUDENT")
+        company_token = self._register_and_login("No Profile Company", "noprofile@company.com", "COMPANY")
+
+        r = self.client.get("/api/student/drives", headers={"Authorization": f"Bearer {student_token}"})
+        self.assertEqual(r.status_code, 200)
+        payload = r.get_json()
+        self.assertEqual(payload["items"], [])
+        self.assertEqual(payload["total"], 0)
+
+        r = self.client.get("/api/company/drives", headers={"Authorization": f"Bearer {company_token}"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.get_json(), [])
+
     def test_student_profile_and_resume_upload(self):
         token = self._register_and_login("Student", "student@test.com", "STUDENT")
         r = self.client.post(

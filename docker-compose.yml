@@ -7,6 +7,13 @@ services:
     ports:
       - "6379:6379"
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: ppa_mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   flask:
     build: .
     container_name: ppa_flask
@@ -18,10 +25,14 @@ services:
       - "5000:5000"
     depends_on:
       - redis
+      - mailpit
     environment:
       FLASK_APP: backend.app:create_app
       FLASK_ENV: development
       REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: noreply@ppa.local
 
   celery:
     build: .
@@ -32,10 +43,14 @@ services:
       - .:/app
     depends_on:
       - redis
+      - mailpit
     environment:
       FLASK_APP: backend.app:create_app
       FLASK_ENV: development
       REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: noreply@ppa.local
 
   celery_beat:
     build: .
@@ -46,7 +61,11 @@ services:
       - .:/app
     depends_on:
       - redis
+      - mailpit
     environment:
       FLASK_APP: backend.app:create_app
       FLASK_ENV: development
       REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: noreply@ppa.local

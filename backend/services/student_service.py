@@ -62,7 +62,10 @@ class StudentService:
 
     @staticmethod
     def list_drives(user_id: int, fit_profile: bool = False, page: int = 1, per_page: int = 5):
-        profile = StudentProfile.query.filter_by(user_id=user_id).first_or_404()
+        profile = StudentProfile.query.filter_by(user_id=user_id).first()
+        if profile is None:
+            return {"items": [], "page": 1, "per_page": per_page, "total": 0, "total_pages": 1}
+
         cache_key = f"drives:list:{user_id}:{fit_profile}:{page}:{per_page}"
         cached = cache_get(cache_key)
         if cached:

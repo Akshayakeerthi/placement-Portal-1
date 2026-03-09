@@ -44,7 +44,10 @@ class CompanyService:
 
     @staticmethod
     def list_company_drives(user_id: int):
-        company = CompanyProfile.query.filter_by(user_id=user_id).first_or_404()
+        company = CompanyProfile.query.filter_by(user_id=user_id).first()
+        if company is None:
+            return []
+
         now = datetime.utcnow()
         drives = []
         dirty = False
