@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7
+    container_name: ppa_redis
+    ports:
+      - "6379:6379"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: ppa_mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  flask:
+    build: .
+    container_name: ppa_flask
+    command: sh -c "flask init-db && flask run --host=0.0.0.0 --port=5000"
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+      - mailpit
+    environment:
+      FLASK_APP: backend.app:create_app
+      FLASK_ENV: development
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: noreply@ppa.local
+
+  celery:
+    build: .
+    container_name: ppa_celery
+    command: celery -A backend.celery_worker.celery_app worker --loglevel=info
+    working_dir: /app
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - mailpit
+    environment:
+      FLASK_APP: backend.app:create_app
+      FLASK_ENV: development
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: noreply@ppa.local
+
+  celery_beat:
+    build: .
+    container_name: ppa_celery_beat
+    command: celery -A backend.celery_worker.celery_app beat --loglevel=info
+    working_dir: /app
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - mailpit
+    environment:
+      FLASK_APP: backend.app:create_app
+      FLASK_ENV: development
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: noreply@ppa.local
