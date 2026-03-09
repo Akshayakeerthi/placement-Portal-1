@@ -128,7 +128,6 @@ Set these before running Flask/Celery if you want real email/chat delivery:
 - `SMTP_USE_TLS` (`1` to enable TLS)
 - `SMTP_USERNAME`, `SMTP_PASSWORD` (optional auth)
 - `MAIL_FROM` (default: `noreply@ppa.local`)
-- `MAIL_SUPPRESS_SEND=1` (testing mode, captures emails in-memory)
 - `CHAT_WEBHOOK_URL` (optional Google Chat webhook URL for daily summary ping)
 
 ### 3) Configure Flask app and initialize DB
@@ -198,22 +197,6 @@ The Docker setup includes:
 Admin login credentials (same for Docker and non-Docker runs):
 - email: `admin@ppa.local`
 - password: `Admin@123`
-
-### 7) (Optional) Run automated smoke tests
-
-#### Linux / macOS / WSL
-
-```bash
-. .venv/bin/activate
-python -m unittest tests/test_api_smoke.py -v
-```
-
-#### Windows Command Prompt
-
-```bat
-.venv\Scripts\activate
-python -m unittest tests\test_api_smoke.py -v
-```
 
 ---
 
