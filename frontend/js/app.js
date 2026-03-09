@@ -11,34 +11,34 @@ createApp({
     return {
       role: localStorage.getItem('role'),
       name: localStorage.getItem('name') || 'User',
-      authPanel: {
-        open: false,
-        mode: 'login',
-        role: 'STUDENT',
-      },
+      authRoute: null,
     };
   },
   methods: {
     onLoggedIn(role) {
       this.role = role;
       this.name = localStorage.getItem('name') || 'User';
-      this.authPanel.open = false;
+      this.authRoute = null;
     },
     logout() {
       localStorage.clear();
       this.role = null;
       this.name = 'User';
+      this.authRoute = null;
     },
-    openAuth(mode = 'login', role = 'STUDENT') {
-      this.authPanel = { open: true, mode, role };
+    goToAuth(mode = 'login', role = 'STUDENT') {
+      this.authRoute = { mode, role };
+    },
+    goHome() {
+      this.authRoute = null;
     },
   },
   template: `
     <div>
-      <template v-if="!role">
+      <template v-if="!role && !authRoute">
         <nav class="navbar navbar-dark bg-dark px-3 px-lg-5 mb-4 rounded-3">
           <span class="navbar-brand mb-0 h1">Placement Portal</span>
-          <button class="btn btn-outline-light" @click="openAuth('login', 'STUDENT')">Login</button>
+          <button class="btn btn-outline-light" @click="goToAuth('login', 'STUDENT')">Login</button>
         </nav>
 
         <section class="landing-shell p-4 p-lg-5 mb-4">
@@ -50,9 +50,9 @@ createApp({
               <p class="text-secondary mb-4">Inspired by modern hiring portals like Naukri, Indeed and Glassdoor, this application helps manage the full lifecycle: company approvals, drive publishing, applications, shortlisting, and final outcomes.</p>
 
               <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-primary btn-lg px-4" @click="openAuth('login', 'STUDENT')">Login</button>
-                <button class="btn btn-success btn-lg px-4" @click="openAuth('register', 'STUDENT')">Student Register</button>
-                <button class="btn btn-info btn-lg px-4 text-dark" @click="openAuth('register', 'COMPANY')">Company Register</button>
+                <button class="btn btn-primary btn-lg px-4" @click="goToAuth('login', 'STUDENT')">Login</button>
+                <button class="btn btn-success btn-lg px-4" @click="goToAuth('register', 'STUDENT')">Student Register</button>
+                <button class="btn btn-info btn-lg px-4 text-dark" @click="goToAuth('register', 'COMPANY')">Company Register</button>
               </div>
             </div>
             <div class="col-lg-4">
@@ -77,8 +77,19 @@ createApp({
           <div class="col-lg-4"><div class="feature-card p-3"><h3>Drive Management</h3><p class="mb-0">Create, approve, complete and archive placement drives with clear visibility.</p></div></div>
           <div class="col-lg-4"><div class="feature-card p-3"><h3>Application Tracking</h3><p class="mb-0">Students and companies both see real-time application status and history.</p></div></div>
         </section>
+      </template>
 
-        <AuthView v-if="authPanel.open" :compact="true" :preset-mode="authPanel.mode" :preset-role="authPanel.role" @logged-in="onLoggedIn" @close="authPanel.open=false" />
+      <template v-else-if="!role && authRoute">
+        <nav class="navbar navbar-dark bg-dark px-3 px-lg-5 mb-4 rounded-3">
+          <span class="navbar-brand mb-0 h1">Placement Portal</span>
+          <button class="btn btn-outline-light" @click="goHome">Back to Home</button>
+        </nav>
+
+        <AuthView
+          :preset-mode="authRoute.mode"
+          :preset-role="authRoute.role"
+          @logged-in="onLoggedIn"
+        />
       </template>
 
       <template v-else>
