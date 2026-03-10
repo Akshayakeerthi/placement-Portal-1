@@ -37,7 +37,7 @@ createApp({
     <div>
       <template v-if="!role && !authRoute">
         <nav class="navbar navbar-dark bg-dark px-3 px-lg-5 mb-4 rounded-3">
-          <span class="navbar-brand mb-0 h1">CampusConnect</span>
+          <span class="navbar-brand mb-0 h1">SeekerHub</span>
           <button class="btn btn-outline-light" @click="goToAuth('login', 'STUDENT')">Login</button>
         </nav>
 
@@ -45,7 +45,7 @@ createApp({
           <div class="row g-4 align-items-start">
             <div class="col-lg-8">
               <span class="badge rounded-pill text-bg-primary mb-3">Campus Recruitment Platform</span>
-              <h1 class="display-5 fw-bold mb-3">CampusConnect Recruitment Hub</h1>
+              <h1 class="display-5 fw-bold mb-3">SeekerHub Recruitment Hub</h1>
               <p class="lead mb-3">A single platform where institutes, students, and recruiters collaborate for smoother campus placements.</p>
               <p class="text-secondary mb-4">Inspired by modern hiring portals like Naukri, Indeed and Glassdoor, this application helps manage the full lifecycle: company approvals, drive publishing, applications, shortlisting, and final outcomes.</p>
 
@@ -81,7 +81,7 @@ createApp({
 
       <template v-else-if="!role && authRoute">
         <nav class="navbar navbar-dark bg-dark px-3 px-lg-5 mb-4 rounded-3">
-          <span class="navbar-brand mb-0 h1">CampusConnect</span>
+          <span class="navbar-brand mb-0 h1">SeekerHub</span>
           <button class="btn btn-outline-light" @click="goHome">Back to Home</button>
         </nav>
 
@@ -96,7 +96,7 @@ createApp({
         <div class="top-gradient p-4 mb-4 shadow-sm">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h2 class="mb-1">CampusConnect Application</h2>
+              <h2 class="mb-1">SeekerHub Application</h2>
               <p class="mb-0 opacity-75">Dashboard for students, companies, and admins.</p>
               <small class="d-block mt-2">Welcome, {{name}} ({{role}})</small>
             </div>
