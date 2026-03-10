@@ -45,7 +45,7 @@ createApp({
           <div class="row g-4 align-items-start">
             <div class="col-lg-8">
               <span class="badge rounded-pill text-bg-primary mb-3">Campus Recruitment Platform</span>
-              <h1 class="display-5 fw-bold mb-3">SeekerHub Recruitment Hub</h1>
+              <h1 class="display-5 fw-bold mb-3">SeekerHub</h1>
               <p class="lead mb-3">A single platform where institutes, students, and recruiters collaborate for smoother campus placements.</p>
               <p class="text-secondary mb-4">Inspired by modern hiring portals like Naukri, Indeed and Glassdoor, this application helps manage the full lifecycle: company approvals, drive publishing, applications, shortlisting, and final outcomes.</p>
 
