@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 
 from backend.services.admin_service import AdminService
+from backend.tasks.jobs import export_admin_summary_task
 from backend.utils.auth import role_required
 
 bp = Blueprint("admin", __name__, url_prefix="/api/admin")
@@ -71,3 +72,10 @@ def drives():
 @role_required("ADMIN")
 def reports():
     return jsonify(AdminService.reports())
+
+
+@bp.post("/summary/export")
+@role_required("ADMIN")
+def export_summary():
+    result = export_admin_summary_task.apply().get()
+    return jsonify({"message": "Summary exported and emailed to admin.", "result": result})

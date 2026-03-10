@@ -10,6 +10,33 @@ from backend.services.admin_service import AdminService
 from backend.utils.notifications import send_chat_webhook, send_email
 
 
+def _build_admin_summary_html(data: dict, heading: str = "Placement Portal Summary Report") -> str:
+    return f"""
+    <html><body>
+      <h2>{heading}</h2>
+      <h3>Admin Summary (same as admin dashboard)</h3>
+      <ul>
+        <li>Total Users: {data['counts']['users']}</li>
+        <li>Total Students: {data['counts']['students']}</li>
+        <li>Total Companies: {data['counts']['companies']}</li>
+        <li>Total Drives: {data['counts']['drives']}</li>
+        <li>Total Applications: {data['counts']['applications']}</li>
+        <li>Selected Students: {data['counts']['selected']}</li>
+        <li>Pending Company Approvals: {data['summary']['pending_companies']}</li>
+        <li>Pending Drive Approvals: {data['summary']['pending_drives']}</li>
+        <li>Selection Rate: {data['summary']['selection_rate']}%</li>
+      </ul>
+
+      <h3>Application Status Breakdown</h3>
+      <pre>{data['application_status_summary']}</pre>
+
+      <h3>6-Month Trend</h3>
+      <p><strong>Drives created:</strong> {data['trends']['drives']}</p>
+      <p><strong>Applications submitted:</strong> {data['trends']['applications']}</p>
+    </body></html>
+    """
+
+
 @celery_app.task(name="tasks.daily_reminder")
 def daily_reminder_task():
     now = datetime.utcnow()
@@ -68,17 +95,7 @@ def monthly_report_task():
     report_dir.mkdir(parents=True, exist_ok=True)
 
     report_file = report_dir / f"monthly_report_{datetime.utcnow().strftime('%Y_%m')}.html"
-    html = f"""
-    <html><body>
-      <h2>Placement Portal Monthly Report</h2>
-      <p>Total Users: {data['total_users']}</p>
-      <p>Number of Drives Conducted: {data['total_drives']}</p>
-      <p>Number of Students Applied: {data['students_applied']}</p>
-      <p>Number of Students Selected: {data['students_selected']}</p>
-      <p>Total Applications: {data['total_applications']}</p>
-      <pre>{data['application_status_summary']}</pre>
-    </body></html>
-    """
+    html = _build_admin_summary_html(data, heading="Placement Portal Monthly Report")
     report_file.write_text(html, encoding="utf-8")
 
     admin = User.query.filter_by(role=UserRole.ADMIN).first()
@@ -122,3 +139,20 @@ def export_csv_task(user_id: int):
             )
 
     return {"csv_file": str(file_path), "notified": True}
+
+
+@celery_app.task(name="tasks.export_admin_summary")
+def export_admin_summary_task():
+    data = AdminService.reports()
+    html = _build_admin_summary_html(data, heading="Placement Portal Admin Summary Export")
+
+    admin = User.query.filter_by(role=UserRole.ADMIN).first()
+    recipient = admin.email if admin else current_app.config["ADMIN_EMAIL"]
+    email_result = send_email(
+        subject="Placement Portal Admin Summary Export",
+        body="Please find the current admin summary report attached in HTML format.",
+        recipients=[recipient],
+        html=html,
+    )
+
+    return {"sent_to": recipient, "email_result": email_result}

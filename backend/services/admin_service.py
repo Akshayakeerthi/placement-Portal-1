@@ -9,20 +9,72 @@ from backend.utils.cache import cache_delete_pattern, cache_get, cache_set
 
 class AdminService:
     @staticmethod
+    def _month_key(dt: datetime) -> str:
+        return dt.strftime("%Y-%m")
+
+    @staticmethod
+    def _last_n_month_keys(n: int = 6) -> list[str]:
+        now = datetime.utcnow()
+        keys = []
+        year = now.year
+        month = now.month
+        for _ in range(n):
+            keys.append(f"{year:04d}-{month:02d}")
+            month -= 1
+            if month == 0:
+                month = 12
+                year -= 1
+        return list(reversed(keys))
+
+    @staticmethod
+    def _monthly_trend(rows: list[datetime], months: int = 6):
+        keys = AdminService._last_n_month_keys(months)
+        bucket = {k: 0 for k in keys}
+        for dt in rows:
+            if not dt:
+                continue
+            mk = AdminService._month_key(dt)
+            if mk in bucket:
+                bucket[mk] += 1
+        return [{"month": k, "count": bucket[k]} for k in keys]
+
+    @staticmethod
     def dashboard_counts():
         key = "admin:dashboard:counts"
         cached = cache_get(key)
         if cached:
             return cached
 
+        status_summary = dict(
+            db.session.query(Application.status, func.count(Application.id))
+            .group_by(Application.status)
+            .all()
+        )
+        selected_count = status_summary.get("SELECTED", 0)
+        total_applications = Application.query.count()
+
+        drive_created_rows = [r[0] for r in db.session.query(PlacementDrive.created_at).all()]
+        app_created_rows = [r[0] for r in db.session.query(Application.created_at).all()]
+
         payload = {
-            "users": User.query.count(),
-            "students": User.query.filter_by(role=UserRole.STUDENT).count(),
-            "companies": User.query.filter_by(role=UserRole.COMPANY).count(),
-            "pending_companies": CompanyProfile.query.filter_by(approved=False).count(),
-            "drives": PlacementDrive.query.count(),
-            "pending_drives": PlacementDrive.query.filter_by(approved=False).count(),
-            "applications": Application.query.count(),
+            "counts": {
+                "users": User.query.count(),
+                "students": User.query.filter_by(role=UserRole.STUDENT).count(),
+                "companies": User.query.filter_by(role=UserRole.COMPANY).count(),
+                "drives": PlacementDrive.query.count(),
+                "applications": total_applications,
+                "selected": selected_count,
+            },
+            "summary": {
+                "pending_companies": CompanyProfile.query.filter_by(approved=False).count(),
+                "pending_drives": PlacementDrive.query.filter_by(approved=False).count(),
+                "selection_rate": round((selected_count / total_applications) * 100, 2) if total_applications else 0,
+            },
+            "application_status_summary": status_summary,
+            "trends": {
+                "drives": AdminService._monthly_trend(drive_created_rows),
+                "applications": AdminService._monthly_trend(app_created_rows),
+            },
         }
         cache_set(key, payload)
         return payload
@@ -154,17 +206,13 @@ class AdminService:
 
     @staticmethod
     def reports():
-        status_summary = dict(
-            db.session.query(Application.status, func.count(Application.id))
-            .group_by(Application.status)
-            .all()
-        )
-        selected_count = status_summary.get("SELECTED", 0)
+        payload = AdminService.dashboard_counts()
+        counts = payload["counts"]
         return {
-            "total_users": User.query.count(),
-            "total_drives": PlacementDrive.query.count(),
-            "total_applications": Application.query.count(),
-            "students_applied": Application.query.count(),
-            "students_selected": selected_count,
-            "application_status_summary": status_summary,
+            **payload,
+            "total_users": counts["users"],
+            "total_drives": counts["drives"],
+            "total_applications": counts["applications"],
+            "students_applied": counts["applications"],
+            "students_selected": counts["selected"],
         }
