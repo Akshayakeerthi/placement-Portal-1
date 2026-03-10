@@ -1,0 +1,65 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1929 >>
+stream
+BT
+/F1 12 Tf
+1 0 0 1 50 780 Tm (Placement Portal v2 - Implementation Report) Tj
+1 0 0 1 50 764 Tm (Date: 2026-03-06) Tj
+1 0 0 1 50 748 Tm () Tj
+1 0 0 1 50 732 Tm (1. Overview) Tj
+1 0 0 1 50 716 Tm (Placement Portal v2 is a full-stack platform with a Flask backend,) Tj
+1 0 0 1 50 700 Tm (a Vue frontend, and Celery workers for asynchronous jobs.) Tj
+1 0 0 1 50 684 Tm () Tj
+1 0 0 1 50 668 Tm (2. Backend Highlights) Tj
+1 0 0 1 50 652 Tm (- App factory pattern with modular blueprints.) Tj
+1 0 0 1 50 636 Tm (- JWT-based role access for ADMIN, COMPANY, and STUDENT.) Tj
+1 0 0 1 50 620 Tm (- SQLAlchemy data models for users, profiles, drives, and applications.) Tj
+1 0 0 1 50 604 Tm (- Service layer for auth, admin workflows, company flows, and student flows.) Tj
+1 0 0 1 50 588 Tm () Tj
+1 0 0 1 50 572 Tm (3. Frontend Highlights) Tj
+1 0 0 1 50 556 Tm (- Vue 3 single-page UI with role-specific dashboards.) Tj
+1 0 0 1 50 540 Tm (- Authentication view and API abstraction for backend calls.) Tj
+1 0 0 1 50 524 Tm (- Admin, company, and student workflows covered in dedicated components.) Tj
+1 0 0 1 50 508 Tm () Tj
+1 0 0 1 50 492 Tm (4. Background Processing & Infra) Tj
+1 0 0 1 50 476 Tm (- Celery worker and beat scheduling for reminders/reports/exports.) Tj
+1 0 0 1 50 460 Tm (- Redis used for queueing and cache support.) Tj
+1 0 0 1 50 444 Tm (- Docker + docker-compose to run app and worker services locally.) Tj
+1 0 0 1 50 428 Tm () Tj
+1 0 0 1 50 412 Tm (5. Testing) Tj
+1 0 0 1 50 396 Tm (- Smoke tests validate registration, login, profile setup,) Tj
+1 0 0 1 50 380 Tm (  drive management, approvals, and applications.) Tj
+1 0 0 1 50 364 Tm () Tj
+1 0 0 1 50 348 Tm (6. Deliverables) Tj
+1 0 0 1 50 332 Tm (- Source code for backend, frontend, jobs, and tests.) Tj
+1 0 0 1 50 316 Tm (- Project documentation and run instructions.) Tj
+1 0 0 1 50 300 Tm (- This PDF report committed to the repository for GitHub review.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2292
+%%EOF
