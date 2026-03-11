@@ -55,6 +55,7 @@ def init_db() -> None:
         CREATE TABLE IF NOT EXISTS company_profiles (
             user_id INTEGER PRIMARY KEY,
             company_name TEXT NOT NULL,
+            email TEXT,
             hr_contact TEXT,
             website TEXT,
             description TEXT,
@@ -106,6 +107,10 @@ def init_db() -> None:
     drive_columns = {row[1] for row in db.execute("PRAGMA table_info(drives)").fetchall()}
     if "drive_name" not in drive_columns:
         db.execute("ALTER TABLE drives ADD COLUMN drive_name TEXT")
+
+    company_columns = {row[1] for row in db.execute("PRAGMA table_info(company_profiles)").fetchall()}
+    if "email" not in company_columns:
+        db.execute("ALTER TABLE company_profiles ADD COLUMN email TEXT")
 
     admin = db.execute("SELECT id FROM users WHERE role='admin' LIMIT 1").fetchone()
     if not admin:
@@ -246,10 +251,11 @@ def register_company():
                 ),
             )
             db.execute(
-                "INSERT INTO company_profiles (user_id, company_name, hr_contact, website, description) VALUES (?,?,?,?,?)",
+                "INSERT INTO company_profiles (user_id, company_name, email, hr_contact, website, description) VALUES (?,?,?,?,?,?)",
                 (
                     cur.lastrowid,
                     request.form["company_name"].strip(),
+                    request.form.get("email", "").strip(),
                     request.form.get("hr_contact", "").strip(),
                     request.form.get("website", "").strip(),
                     request.form.get("description", "").strip(),
