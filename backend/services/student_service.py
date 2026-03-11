@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from backend.extensions import db
-from backend.models import Application, ApplicationStatus, PlacementDrive, StudentProfile
+from backend.models import Application, ApplicationStatus, CompanyProfile, PlacementDrive, StudentProfile, User
 from backend.tasks.jobs import export_csv_task
 from backend.utils.cache import cache_delete_pattern, cache_get, cache_set
 from backend.utils.validators import ValidationError, validate_student_profile
@@ -72,7 +72,14 @@ class StudentService:
             return cached
 
         now = datetime.utcnow()
-        drives = PlacementDrive.query.filter_by(approved=True).order_by(PlacementDrive.deadline.asc()).all()
+        drives = (
+            PlacementDrive.query
+            .join(PlacementDrive.company)
+            .join(CompanyProfile.user)
+            .filter(PlacementDrive.approved.is_(True), User.is_blacklisted.is_(False))
+            .order_by(PlacementDrive.deadline.asc())
+            .all()
+        )
         dirty = False
         rows = []
 
@@ -134,6 +141,8 @@ class StudentService:
             raise ValidationError("Drive is closed")
         if not drive.approved:
             raise ValidationError("Drive not approved")
+        if drive.company and drive.company.user and drive.company.user.is_blacklisted:
+            raise ValidationError("Drive is not available")
 
         if not StudentService._is_eligible(profile, drive):
             raise ValidationError("Not eligible for this drive")

@@ -127,7 +127,7 @@ export default {
     },
     async exportCsv() {
       await api.post('/student/applications/export');
-      this.message = 'CSV export queued';
+      this.message = 'Export queued';
     },
   },
   template: `
@@ -136,7 +136,7 @@ export default {
         <h4 class="section-title mb-0">Student Dashboard</h4>
         <div class="d-flex gap-2">
           <button v-if="section==='dashboard'" class="btn btn-outline-primary" @click="openEditProfile">Edit Profile</button>
-          <button class="btn btn-outline-secondary" @click="exportCsv">Export CSV</button>
+          <button class="btn btn-outline-secondary" @click="exportCsv">Export</button>
         </div>
       </div>
 

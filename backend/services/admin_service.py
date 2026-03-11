@@ -110,8 +110,18 @@ class AdminService:
         user = User.query.get_or_404(user_id)
         if user.role == UserRole.ADMIN:
             raise ValueError("Cannot blacklist ADMIN")
+
         user.is_blacklisted = value
+
+        if user.role == UserRole.COMPANY and value:
+            company = CompanyProfile.query.filter_by(user_id=user.id).first()
+            if company:
+                PlacementDrive.query.filter_by(company_id=company.id, closed=False).update({"closed": True})
+
         db.session.commit()
+        cache_delete_pattern("admin:*")
+        cache_delete_pattern("drives:approved:*")
+        cache_delete_pattern("drives:list:*")
         return user
 
     @staticmethod
@@ -176,7 +186,9 @@ class AdminService:
         rows = (
             db.session.query(PlacementDrive, CompanyProfile)
             .join(CompanyProfile, PlacementDrive.company_id == CompanyProfile.id)
+            .join(User, CompanyProfile.user_id == User.id)
             .filter(
+                User.is_blacklisted.is_(False),
                 or_(
                     PlacementDrive.title.ilike(f"%{query}%"),
                     CompanyProfile.company_name.ilike(f"%{query}%"),

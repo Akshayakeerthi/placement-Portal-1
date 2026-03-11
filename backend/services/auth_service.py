@@ -1,3 +1,4 @@
+import re
 from flask import current_app
 from flask_jwt_extended import create_access_token
 
@@ -16,6 +17,9 @@ class AuthService:
             raise ValueError("Password and confirm password must match")
 
         email = email.strip().lower()
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
+            raise ValueError("Incorrect email id")
+
         if User.query.filter_by(email=email).first():
             raise ValueError("Email already registered")
 
