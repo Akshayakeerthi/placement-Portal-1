@@ -591,7 +591,7 @@ def student_dashboard():
         FROM applications a
         JOIN drives d ON d.id=a.drive_id
         JOIN company_profiles c ON c.user_id=d.company_id
-        WHERE a.student_id=? ORDER BY a.application_date DESC
+        WHERE a.student_id=? AND d.status!='closed' ORDER BY a.application_date DESC
         """,
         (sid,),
     ).fetchall()
