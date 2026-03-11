@@ -55,6 +55,7 @@ def init_db() -> None:
         CREATE TABLE IF NOT EXISTS company_profiles (
             user_id INTEGER PRIMARY KEY,
             company_name TEXT NOT NULL,
+            email TEXT,
             hr_contact TEXT,
             website TEXT,
             description TEXT,
@@ -106,6 +107,10 @@ def init_db() -> None:
     drive_columns = {row[1] for row in db.execute("PRAGMA table_info(drives)").fetchall()}
     if "drive_name" not in drive_columns:
         db.execute("ALTER TABLE drives ADD COLUMN drive_name TEXT")
+
+    company_columns = {row[1] for row in db.execute("PRAGMA table_info(company_profiles)").fetchall()}
+    if "email" not in company_columns:
+        db.execute("ALTER TABLE company_profiles ADD COLUMN email TEXT")
 
     admin = db.execute("SELECT id FROM users WHERE role='admin' LIMIT 1").fetchone()
     if not admin:
@@ -246,10 +251,11 @@ def register_company():
                 ),
             )
             db.execute(
-                "INSERT INTO company_profiles (user_id, company_name, hr_contact, website, description) VALUES (?,?,?,?,?)",
+                "INSERT INTO company_profiles (user_id, company_name, email, hr_contact, website, description) VALUES (?,?,?,?,?,?)",
                 (
                     cur.lastrowid,
                     request.form["company_name"].strip(),
+                    request.form.get("email", "").strip(),
                     request.form.get("hr_contact", "").strip(),
                     request.form.get("website", "").strip(),
                     request.form.get("description", "").strip(),
@@ -358,6 +364,16 @@ def admin_blacklist_company(user_id: int):
     return redirect(url_for("admin_dashboard"))
 
 
+@app.post("/admin/company/<int:user_id>/unblacklist")
+@login_required("admin")
+def admin_unblacklist_company(user_id: int):
+    db = get_db()
+    db.execute("UPDATE users SET is_blacklisted=0 WHERE id=? AND role='company'", (user_id,))
+    db.commit()
+    flash("Company removed from blacklist.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
 @app.post("/admin/student/<int:user_id>/blacklist")
 @login_required("admin")
 def admin_blacklist_student(user_id: int):
@@ -365,6 +381,16 @@ def admin_blacklist_student(user_id: int):
     db.execute("UPDATE users SET is_blacklisted=1 WHERE id=? AND role='student'", (user_id,))
     db.commit()
     flash("Student blacklisted.", "warning")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.post("/admin/student/<int:user_id>/unblacklist")
+@login_required("admin")
+def admin_unblacklist_student(user_id: int):
+    db = get_db()
+    db.execute("UPDATE users SET is_blacklisted=0 WHERE id=? AND role='student'", (user_id,))
+    db.commit()
+    flash("Student removed from blacklist.", "success")
     return redirect(url_for("admin_dashboard"))
 
 
@@ -546,7 +572,7 @@ def student_dashboard():
     profile = db.execute("SELECT * FROM student_profiles WHERE user_id=?", (sid,)).fetchone()
     organizations = db.execute(
         """
-        SELECT c.company_name, c.website
+        SELECT u.id AS user_id, c.company_name, c.website
         FROM users u JOIN company_profiles c ON c.user_id=u.id
         WHERE u.role='company' AND u.is_approved=1 AND u.is_blacklisted=0
         ORDER BY c.company_name
@@ -565,7 +591,7 @@ def student_dashboard():
         FROM applications a
         JOIN drives d ON d.id=a.drive_id
         JOIN company_profiles c ON c.user_id=d.company_id
-        WHERE a.student_id=? ORDER BY a.application_date DESC
+        WHERE a.student_id=? AND d.status!='closed' ORDER BY a.application_date DESC
         """,
         (sid,),
     ).fetchall()
@@ -577,6 +603,23 @@ def student_dashboard():
         current_drives=current_drives,
         applied_drives=applied_drives,
     )
+
+
+@app.get("/student/company/<int:company_id>")
+@login_required("student")
+def student_company_details(company_id: int):
+    company = get_db().execute(
+        """
+        SELECT u.id AS user_id, c.company_name, c.email, c.hr_contact, c.website, c.description
+        FROM users u JOIN company_profiles c ON c.user_id=u.id
+        WHERE u.id=? AND u.role='company' AND u.is_approved=1 AND u.is_blacklisted=0
+        """,
+        (company_id,),
+    ).fetchone()
+    if not company:
+        flash("Company not found.", "danger")
+        return redirect(url_for("student_dashboard"))
+    return render_template("student_company_details.html", company=company)
 
 
 @app.route("/student/profile", methods=["GET", "POST"])

@@ -5,33 +5,62 @@
   <a class="btn btn-success" href="{{ url_for('create_drive') }}">Create Drive</a>
 </div>
 
-<div class="card mb-3"><div class="card-header">Welcome {{ company.company_name }}</div><div class="card-body p-0">
-  <h6 class="px-3 pt-2">Upcoming Drives</h6>
-  <table class="table table-sm mb-2">
-    <tr><th>Sr No.</th><th>Drive Name</th><th>Actions</th></tr>
-    {% for d in upcoming_drives %}
-    <tr>
-      <td>{{ d.id }}</td>
-      <td>{{ d.drive_name or d.job_title }}</td>
-      <td>
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('company_drive_details', drive_id=d.id) }}">view details</a>
-        <a class="btn btn-sm btn-outline-info" href="{{ url_for('company_drive_applications', drive_id=d.id) }}">review applications</a>
-        {% if d.status == 'approved' %}
-        <form method="post" action="{{ url_for('company_close_drive', drive_id=d.id) }}" class="d-inline"><button class="btn btn-sm btn-success">mark as complete</button></form>
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+<div class="card dashboard-card shadow-sm mb-4">
+  <div class="card-header">Welcome {{ company.company_name }}</div>
+  <div class="card-body">
+    Manage your drives from the sections below.
+  </div>
+</div>
 
-  <h6 class="px-3">Closed Drives</h6>
-  <table class="table table-sm mb-0">
-    <tr><th>Sr No.</th><th>Drive Name</th><th>Actions</th></tr>
-    {% for d in closed_drives %}
-    <tr><td>{{ d.id }}</td><td>{{ d.drive_name or d.job_title }}</td><td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('company_drive_details', drive_id=d.id) }}">view details</a></td></tr>
-    {% else %}
-    <tr><td colspan="3" class="text-center p-3">No closed drives.</td></tr>
-    {% endfor %}
-  </table>
-</div></div>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card dashboard-card shadow-sm h-100">
+      <div class="card-header">Ongoing Drives</div>
+      <div class="card-body table-responsive p-0">
+        <table class="table table-modern table-hover mb-0">
+          <thead><tr><th>Sr No.</th><th>Drive Name</th><th>Actions</th></tr></thead>
+          <tbody>
+          {% for d in upcoming_drives %}
+          <tr>
+            <td>{{ d.id }}</td>
+            <td>{{ d.drive_name or d.job_title }}</td>
+            <td>
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('company_drive_details', drive_id=d.id) }}">view details</a>
+              <a class="btn btn-sm btn-outline-info" href="{{ url_for('company_drive_applications', drive_id=d.id) }}">review applications</a>
+              {% if d.status == 'approved' %}
+              <form method="post" action="{{ url_for('company_close_drive', drive_id=d.id) }}" class="d-inline"><button class="btn btn-sm btn-success">mark as complete</button></form>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="text-center py-3">No ongoing drives.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card dashboard-card shadow-sm h-100">
+      <div class="card-header">Closed Drives</div>
+      <div class="card-body table-responsive p-0">
+        <table class="table table-modern table-hover mb-0">
+          <thead><tr><th>Sr No.</th><th>Drive Name</th><th>Actions</th></tr></thead>
+          <tbody>
+          {% for d in closed_drives %}
+          <tr>
+            <td>{{ d.id }}</td>
+            <td>{{ d.drive_name or d.job_title }}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('company_drive_details', drive_id=d.id) }}">view details</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="text-center py-3">No closed drives.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
