@@ -57,10 +57,6 @@ createApp({
             </div>
             <div class="col-lg-4">
               <div class="info-tile p-3 mb-3">
-                <h4 class="h3 fw-semibold">For Admin</h4>
-                <p class="mb-0">Approve companies & drives, monitor all placement activities.</p>
-              </div>
-              <div class="info-tile p-3 mb-3">
                 <h4 class="h3 fw-semibold">For Companies</h4>
                 <p class="mb-0">Create drives, review applicants, shortlist & close hiring.</p>
               </div>
