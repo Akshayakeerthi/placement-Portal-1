@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Company Details</h3>
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('student_dashboard') }}">Back to Dashboard</a>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title mb-3">{{ company.company_name }}</h5>
+    <p><strong>Email:</strong> {{ company.email or '-' }}</p>
+    <p><strong>HR Contact:</strong> {{ company.hr_contact or '-' }}</p>
+    <p><strong>Website:</strong>
+      {% if company.website %}
+      <a href="{{ company.website }}">{{ company.website }}</a>
+      {% else %}
+      -
+      {% endif %}
+    </p>
+    <p class="mb-0"><strong>Description:</strong><br>{{ company.description or '-' }}</p>
+  </div>
+</div>
+{% endblock %}

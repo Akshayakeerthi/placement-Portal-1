@@ -572,7 +572,7 @@ def student_dashboard():
     profile = db.execute("SELECT * FROM student_profiles WHERE user_id=?", (sid,)).fetchone()
     organizations = db.execute(
         """
-        SELECT c.company_name, c.website
+        SELECT u.id AS user_id, c.company_name, c.website
         FROM users u JOIN company_profiles c ON c.user_id=u.id
         WHERE u.role='company' AND u.is_approved=1 AND u.is_blacklisted=0
         ORDER BY c.company_name
@@ -603,6 +603,23 @@ def student_dashboard():
         current_drives=current_drives,
         applied_drives=applied_drives,
     )
+
+
+@app.get("/student/company/<int:company_id>")
+@login_required("student")
+def student_company_details(company_id: int):
+    company = get_db().execute(
+        """
+        SELECT u.id AS user_id, c.company_name, c.email, c.hr_contact, c.website, c.description
+        FROM users u JOIN company_profiles c ON c.user_id=u.id
+        WHERE u.id=? AND u.role='company' AND u.is_approved=1 AND u.is_blacklisted=0
+        """,
+        (company_id,),
+    ).fetchone()
+    if not company:
+        flash("Company not found.", "danger")
+        return redirect(url_for("student_dashboard"))
+    return render_template("student_company_details.html", company=company)
 
 
 @app.route("/student/profile", methods=["GET", "POST"])

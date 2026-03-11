@@ -14,7 +14,7 @@
     <div class="card"><div class="card-header">Organizations</div><div class="card-body p-0">
       <table class="table table-sm mb-0">
         {% for o in organizations %}
-        <tr><td>{{ o.company_name }}</td><td><a class="btn btn-sm btn-outline-primary" href="{{ o.website or '#' }}" target="_blank">view details</a></td></tr>
+        <tr><td>{{ o.company_name }}</td><td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('student_company_details', company_id=o.user_id) }}">view details</a></td></tr>
         {% else %}
         <tr><td class="p-3">No approved organizations.</td></tr>
         {% endfor %}
