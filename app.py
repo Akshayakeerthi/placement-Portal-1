@@ -364,6 +364,16 @@ def admin_blacklist_company(user_id: int):
     return redirect(url_for("admin_dashboard"))
 
 
+@app.post("/admin/company/<int:user_id>/unblacklist")
+@login_required("admin")
+def admin_unblacklist_company(user_id: int):
+    db = get_db()
+    db.execute("UPDATE users SET is_blacklisted=0 WHERE id=? AND role='company'", (user_id,))
+    db.commit()
+    flash("Company removed from blacklist.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
 @app.post("/admin/student/<int:user_id>/blacklist")
 @login_required("admin")
 def admin_blacklist_student(user_id: int):
@@ -371,6 +381,16 @@ def admin_blacklist_student(user_id: int):
     db.execute("UPDATE users SET is_blacklisted=1 WHERE id=? AND role='student'", (user_id,))
     db.commit()
     flash("Student blacklisted.", "warning")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.post("/admin/student/<int:user_id>/unblacklist")
+@login_required("admin")
+def admin_unblacklist_student(user_id: int):
+    db = get_db()
+    db.execute("UPDATE users SET is_blacklisted=0 WHERE id=? AND role='student'", (user_id,))
+    db.commit()
+    flash("Student removed from blacklist.", "success")
     return redirect(url_for("admin_dashboard"))
 
 

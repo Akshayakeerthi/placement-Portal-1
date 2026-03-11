@@ -24,7 +24,11 @@
                 {% if not c.is_approved %}
                 <form method="post" action="{{ url_for('admin_approve_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-sm btn-success">Approve</button></form>
                 {% endif %}
+                {% if c.is_blacklisted %}
+                <form method="post" action="{{ url_for('admin_unblacklist_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-sm btn-secondary">Unblacklist</button></form>
+                {% else %}
                 <form method="post" action="{{ url_for('admin_blacklist_company', user_id=c.id) }}" class="d-inline"><button class="btn btn-sm btn-danger">Blacklist</button></form>
+                {% endif %}
               </td>
             </tr>
           {% else %}
@@ -50,7 +54,13 @@
                 <small class="text-muted">@{{ s.username }} | ID {{ s.id }}</small>
               </td>
               <td>{{ s.department or '-' }}</td>
-              <td><form method="post" action="{{ url_for('admin_blacklist_student', user_id=s.id) }}"><button class="btn btn-sm btn-danger">Blacklist</button></form></td>
+              <td>
+                {% if s.is_blacklisted %}
+                <form method="post" action="{{ url_for('admin_unblacklist_student', user_id=s.id) }}"><button class="btn btn-sm btn-secondary">Unblacklist</button></form>
+                {% else %}
+                <form method="post" action="{{ url_for('admin_blacklist_student', user_id=s.id) }}"><button class="btn btn-sm btn-danger">Blacklist</button></form>
+                {% endif %}
+              </td>
             </tr>
           {% else %}
             <tr><td colspan="3" class="text-center py-3">No students found.</td></tr>
